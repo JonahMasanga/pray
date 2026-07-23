@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+//import { base44 } from '@/api/base44Client';
 import DevotionCard from '@/components/DevotionCard';
 import { BookOpen, Calendar } from 'lucide-react';
 import moment from 'moment';
