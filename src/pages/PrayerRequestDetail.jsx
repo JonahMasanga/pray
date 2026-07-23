@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+//import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Heart, Globe, Lock, Check } from 'lucide-react';
 import CommentSection from '@/components/CommentSection';
 import moment from 'moment';
