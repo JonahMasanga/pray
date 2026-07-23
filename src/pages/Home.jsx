@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+//import { base44 } from '@/api/base44Client';
 import { Heart, Bot, Gift, Bell, ArrowRight } from 'lucide-react';
 import PrayerRequestCard from '@/components/PrayerRequestCard';
 import TestimonyCard from '@/components/TestimonyCard';
