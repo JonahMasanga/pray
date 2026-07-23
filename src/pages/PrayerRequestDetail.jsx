@@ -74,8 +74,24 @@ export default function PrayerRequestDetail() {
   useEffect(() => {
     // Simulate API delay
     const timer = setTimeout(() => {
-      const found = mockRequests.find((r) => r.id === parseInt(id));
-      setRequest(found || null);
+      const numId = parseInt(id);
+      
+      // First check localStorage for user-created prayers
+      const storedRequests = JSON.parse(localStorage.getItem('prayerRequests') || '[]');
+      const storedRequest = storedRequests.find((r) => r.id === numId);
+      
+      if (storedRequest) {
+        // Parse the date if it's a string
+        setRequest({
+          ...storedRequest,
+          created_date: new Date(storedRequest.created_date)
+        });
+      } else {
+        // Fall back to mock data
+        const mockRequest = mockRequests.find((r) => r.id === numId);
+        setRequest(mockRequest || null);
+      }
+      
       setLoading(false);
     }, 500);
     return () => clearTimeout(timer);
