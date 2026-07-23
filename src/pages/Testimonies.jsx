@@ -49,6 +49,7 @@ export default function Testimonies() {
   const [description, setDescription] = useState('');
   const [verse, setVerse] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     loadTestimonies();
@@ -57,32 +58,57 @@ export default function Testimonies() {
   const loadTestimonies = () => {
     // Simulate API delay
     setTimeout(() => {
-      setTestimonies(mockTestimonies);
+      // Get testimonies from localStorage + mock data
+      const storedTestimonies = JSON.parse(localStorage.getItem('testimonies') || '[]');
+      // Parse dates that were stringified
+      const parsedStored = storedTestimonies.map(t => ({
+        ...t,
+        created_date: new Date(t.created_date)
+      }));
+      const allTestimonies = [...parsedStored, ...mockTestimonies];
+      setTestimonies(allTestimonies);
       setLoading(false);
     }, 500);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim()) return;
+    if (!title.trim() || !description.trim()) {
+      setError('Please fill in all required fields');
+      return;
+    }
+    setError('');
     setSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
       const newTestimony = {
-        id: testimonies.length + 1,
+        id: Math.floor(Math.random() * 10000),
         title: title.trim(),
         description: description.trim(),
         verse_reference: verse.trim(),
         created_date: new Date(),
       };
-      setTestimonies([newTestimony, ...testimonies]);
+      
+      // Store in localStorage
+      const existingTestimonies = JSON.parse(localStorage.getItem('testimonies') || '[]');
+      localStorage.setItem('testimonies', JSON.stringify([newTestimony, ...existingTestimonies]));
+      
+      // Reset form
       setTitle('');
       setDescription('');
       setVerse('');
       setShowForm(false);
-      setSubmitting(false);
-    }, 800);
+      
+      // Reload testimonies
+      loadTestimonies();
+    } catch (err) {
+      console.error(err);
+      setError('Failed to submit testimony. Please try again.');
+    }
+    setSubmitting(false);
   };
 
   return (
@@ -108,6 +134,11 @@ export default function Testimonies() {
         {showForm && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-100 mb-8">
             <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+                  {error}
+                </div>
+              )}
               <div className="flex justify-between items-center mb-2">
                 <h3 className="font-heading text-lg font-semibold text-stone-800">
                   Share Your Testimony
@@ -140,7 +171,7 @@ export default function Testimonies() {
                   placeholder="Share what God has done..."
                   rows={5}
                   required
-                  className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A961] focus:border-transparent transition-all"
+                  className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A961] focus:border-transparent transition-all resize-none"
                 />
               </div>
               <div>

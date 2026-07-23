@@ -39,20 +39,25 @@ export default function Community() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
   const loadPosts = () => {
     // Simulate API delay
     setTimeout(() => {
       // Get posts from localStorage if available, otherwise use mock data
       const storedPosts = JSON.parse(localStorage.getItem('communityPosts') || '[]');
-      const allPosts = [...storedPosts, ...mockPosts];
+      // Parse dates that were stringified
+      const parsedStored = storedPosts.map(p => ({
+        ...p,
+        created_date: new Date(p.created_date)
+      }));
+      const allPosts = [...parsedStored, ...mockPosts];
       setPosts(allPosts);
       setLoading(false);
     }, 500);
   };
-
-  useEffect(() => {
-    loadPosts();
-  }, []);
 
   const handleSubmit = () => {
     setShowForm(false);

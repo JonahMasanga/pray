@@ -90,7 +90,15 @@ export default function PrayerRequests() {
   const loadRequests = () => {
     // Simulate API delay
     setTimeout(() => {
-      setRequests(mockRequests);
+      // Get prayers from localStorage + mock data
+      const storedRequests = JSON.parse(localStorage.getItem('prayerRequests') || '[]');
+      // Parse dates that were stringified
+      const parsedStored = storedRequests.map(r => ({
+        ...r,
+        created_date: new Date(r.created_date)
+      }));
+      const allRequests = [...parsedStored, ...mockRequests];
+      setRequests(allRequests);
       setLoading(false);
     }, 500);
   };
