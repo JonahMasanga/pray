@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+//import { base44 } from '@/api/base44Client';
 import { Globe, Lock, Loader2, Send } from 'lucide-react';
 
 export default function PrayerRequestForm({ onSubmit }) {
