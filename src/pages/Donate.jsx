@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+//import { base44 } from '@/api/base44Client';
 import DonationForm from '@/components/DonationForm';
 import { Heart, Shield, Globe } from 'lucide-react';
 
