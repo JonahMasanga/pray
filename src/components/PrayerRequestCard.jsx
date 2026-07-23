@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Lock, Globe, Check } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+//import { base44 } from '@/api/base44Client';
 
 const categoryConfig = {
   health: { label: 'Health', cls: 'bg-red-50 text-red-600' },
