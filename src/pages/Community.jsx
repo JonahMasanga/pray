@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+//import { base44 } from '@/api/base44Client';
 import { Plus, X, MessageCircle } from 'lucide-react';
 import CommunityPostForm from '@/components/CommunityPostForm';
 import CommunityPostCard from '@/components/CommunityPostCard';
