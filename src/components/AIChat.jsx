@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+//import { base44 } from '@/api/base44Client';
 import { Send, Loader2, Bot, Heart, BookOpen, Sparkles, HandHeart } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
