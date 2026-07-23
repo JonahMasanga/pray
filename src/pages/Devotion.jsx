@@ -1,19 +1,57 @@
 import { useState, useEffect } from 'react';
-//import { base44 } from '@/api/base44Client';
 import DevotionCard from '@/components/DevotionCard';
 import { BookOpen, Calendar } from 'lucide-react';
 import moment from 'moment';
+
+// Mock data
+const mockDevotions = [
+  {
+    id: 1,
+    date: new Date(),
+    verse_text: 'Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.',
+    verse_reference: 'Philippians 4:6',
+    message: 'When life feels overwhelming, remember that prayer is your direct line to God. He invites us to share every concern, every fear, every hope with Him.',
+  },
+  {
+    id: 2,
+    date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    verse_text: 'Trust in the LORD with all your heart and lean not on your own understanding.',
+    verse_reference: 'Proverbs 3:5',
+    message: 'Faith is not about understanding everything, but about trusting God even when things don\'t make sense.',
+  },
+  {
+    id: 3,
+    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    verse_text: 'For I know the plans I have for you, declares the Lord, plans for welfare and not for evil, to give you a future and a hope.',
+    verse_reference: 'Jeremiah 29:11',
+    message: 'God\'s plans for your life are good. Even in uncertainty, He is working for your good.',
+  },
+  {
+    id: 4,
+    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    verse_text: 'I can do all things through Christ who strengthens me.',
+    verse_reference: 'Philippians 4:13',
+    message: 'Your strength comes not from yourself, but from your relationship with Christ.',
+  },
+  {
+    id: 5,
+    date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+    verse_text: 'Blessed is the one who trusts in the Lord, whose confidence is in him.',
+    verse_reference: 'Jeremiah 17:7',
+    message: 'True blessing comes from placing your trust and confidence in God.',
+  },
+];
 
 export default function Devotion() {
   const [devotions, setDevotions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.Devotion
-      .list('-created_date', 30)
-      .then(setDevotions)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    // Simulate API delay
+    setTimeout(() => {
+      setDevotions(mockDevotions);
+      setLoading(false);
+    }, 500);
   }, []);
 
   const today = moment().format('YYYY-MM-DD');

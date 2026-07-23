@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-//import { base44 } from '@/api/base44Client';
 import { Plus, Heart, X } from 'lucide-react';
 import PrayerRequestCard from '@/components/PrayerRequestCard';
 import PrayerRequestForm from '@/components/PrayerRequestForm';
@@ -14,6 +13,70 @@ const categories = [
   { value: 'other', label: 'Other' },
 ];
 
+// Mock data
+const mockRequests = [
+  {
+    id: 1,
+    title: 'Prayer for healing',
+    description: 'Please pray for my family member who is recovering from surgery.',
+    category: 'health',
+    prayer_count: 24,
+    is_public: true,
+    requester_name: 'Sarah',
+    created_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 2,
+    title: 'Strength during trials',
+    description: 'Going through a difficult time at work. Need wisdom and courage.',
+    category: 'career',
+    prayer_count: 18,
+    is_public: true,
+    requester_name: 'Michael',
+    created_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 3,
+    title: 'Financial breakthrough',
+    description: 'Praying for a job opportunity that will provide for my family.',
+    category: 'financial',
+    prayer_count: 32,
+    is_public: true,
+    requester_name: 'Jennifer',
+    created_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 4,
+    title: 'Family restoration',
+    description: 'Seeking prayers for reconciliation and healing in family relationships.',
+    category: 'family',
+    prayer_count: 45,
+    is_public: true,
+    requester_name: 'David',
+    created_date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 5,
+    title: 'Spiritual growth',
+    description: 'Praying for deeper faith and connection with God.',
+    category: 'spiritual',
+    prayer_count: 12,
+    is_public: true,
+    requester_name: 'Amanda',
+    created_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 6,
+    title: 'Health recovery',
+    description: 'Please pray for my recovery from illness.',
+    category: 'health',
+    prayer_count: 28,
+    is_public: true,
+    requester_name: 'James',
+    created_date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+  },
+];
+
 export default function PrayerRequests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,18 +87,12 @@ export default function PrayerRequests() {
     loadRequests();
   }, []);
 
-  const loadRequests = async () => {
-    try {
-      const data = await base44.entities.PrayerRequest.filter(
-        { is_public: true },
-        '-created_date',
-        50
-      );
-      setRequests(data);
-    } catch (err) {
-      console.error(err);
-    }
-    setLoading(false);
+  const loadRequests = () => {
+    // Simulate API delay
+    setTimeout(() => {
+      setRequests(mockRequests);
+      setLoading(false);
+    }, 500);
   };
 
   const handleSubmit = () => {

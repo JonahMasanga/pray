@@ -1,7 +1,45 @@
 import { useState, useEffect } from 'react';
-//import { base44 } from '@/api/base44Client';
 import { Plus, Sparkles, Loader2, X } from 'lucide-react';
 import TestimonyCard from '@/components/TestimonyCard';
+
+// Mock data
+const mockTestimonies = [
+  {
+    id: 1,
+    title: 'God healed my mother',
+    description: 'After months of prayer, my mother\'s doctors gave her a clean bill of health. It\'s truly a miracle!',
+    verse_reference: 'Psalm 30:2',
+    created_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 2,
+    title: 'Got the job of my dreams',
+    description: 'Against all odds, I received the job offer I\'ve been praying for. God\'s timing is perfect.',
+    verse_reference: 'Proverbs 3:5-6',
+    created_date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 3,
+    title: 'Restored relationship',
+    description: 'Through prayer and God\'s grace, a broken relationship in my family has been restored.',
+    verse_reference: 'Ephesians 4:2-3',
+    created_date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 4,
+    title: 'Financial blessing',
+    description: 'God provided in ways I never expected. My faith in His provision has been restored.',
+    verse_reference: 'Philippians 4:19',
+    created_date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 5,
+    title: 'Addiction overcome',
+    description: 'By God\'s grace and the support of prayer warriors, I\'ve overcome my struggle with addiction.',
+    verse_reference: '2 Corinthians 12:9',
+    created_date: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
+  },
+];
 
 export default function Testimonies() {
   const [testimonies, setTestimonies] = useState([]);
@@ -16,35 +54,35 @@ export default function Testimonies() {
     loadTestimonies();
   }, []);
 
-  const loadTestimonies = async () => {
-    try {
-      const data = await base44.entities.Testimony.list('-created_date', 50);
-      setTestimonies(data);
-    } catch (err) {
-      console.error(err);
-    }
-    setLoading(false);
+  const loadTestimonies = () => {
+    // Simulate API delay
+    setTimeout(() => {
+      setTestimonies(mockTestimonies);
+      setLoading(false);
+    }, 500);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !description.trim()) return;
     setSubmitting(true);
-    try {
-      await base44.entities.Testimony.create({
+    
+    // Simulate API call
+    setTimeout(() => {
+      const newTestimony = {
+        id: testimonies.length + 1,
         title: title.trim(),
         description: description.trim(),
         verse_reference: verse.trim(),
-      });
+        created_date: new Date(),
+      };
+      setTestimonies([newTestimony, ...testimonies]);
       setTitle('');
       setDescription('');
       setVerse('');
       setShowForm(false);
-      loadTestimonies();
-    } catch (err) {
-      console.error(err);
-    }
-    setSubmitting(false);
+      setSubmitting(false);
+    }, 800);
   };
 
   return (
@@ -102,7 +140,7 @@ export default function Testimonies() {
                   placeholder="Share what God has done..."
                   rows={5}
                   required
-                  className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A961] focus:border-transparent transition-all resize-none"
+                  className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A961] focus:border-transparent transition-all"
                 />
               </div>
               <div>

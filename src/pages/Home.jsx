@@ -1,10 +1,85 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-//import { base44 } from '@/api/base44Client';
 import { Heart, Bot, Gift, Bell, ArrowRight } from 'lucide-react';
 import PrayerRequestCard from '@/components/PrayerRequestCard';
 import TestimonyCard from '@/components/TestimonyCard';
 import DevotionCard from '@/components/DevotionCard';
+
+// Mock data
+const mockRequests = [
+  {
+    id: 1,
+    title: 'Prayer for healing',
+    description: 'Please pray for my family member who is recovering from surgery.',
+    category: 'health',
+    prayer_count: 24,
+    is_public: true,
+    requester_name: 'Sarah',
+    created_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 2,
+    title: 'Strength during trials',
+    description: 'Going through a difficult time at work. Need wisdom and courage.',
+    category: 'career',
+    prayer_count: 18,
+    is_public: true,
+    requester_name: 'Michael',
+    created_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 3,
+    title: 'Financial breakthrough',
+    description: 'Praying for a job opportunity that will provide for my family.',
+    category: 'financial',
+    prayer_count: 32,
+    is_public: true,
+    requester_name: 'Jennifer',
+    created_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 4,
+    title: 'Family restoration',
+    description: 'Seeking prayers for reconciliation and healing in family relationships.',
+    category: 'family',
+    prayer_count: 45,
+    is_public: true,
+    requester_name: 'David',
+    created_date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+  },
+];
+
+const mockTestimonies = [
+  {
+    id: 1,
+    title: 'God healed my mother',
+    description: 'After months of prayer, my mother\'s doctors gave her a clean bill of health. It\'s truly a miracle!',
+    verse_reference: 'Psalm 30:2',
+    created_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 2,
+    title: 'Got the job of my dreams',
+    description: 'Against all odds, I received the job offer I\'ve been praying for. God\'s timing is perfect.',
+    verse_reference: 'Proverbs 3:5-6',
+    created_date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 3,
+    title: 'Restored relationship',
+    description: 'Through prayer and God\'s grace, a broken relationship in my family has been restored.',
+    verse_reference: 'Ephesians 4:2-3',
+    created_date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+  },
+];
+
+const mockDevotion = {
+  id: 1,
+  date: new Date(),
+  verse_text: 'Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.',
+  verse_reference: 'Philippians 4:6',
+  message: 'When life feels overwhelming, remember that prayer is your direct line to God. He invites us to share every concern, every fear, every hope with Him. In bringing our petitions with thanksgiving, we acknowledge His faithfulness and open our hearts to His peace.',
+};
 
 export default function Home() {
   const [requests, setRequests] = useState([]);
@@ -13,15 +88,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      base44.entities.PrayerRequest.filter({ is_public: true }, '-created_date', 4).catch(() => []),
-      base44.entities.Testimony.list('-created_date', 3).catch(() => []),
-      base44.entities.Devotion.list('-created_date', 1).catch(() => []),
-    ]).then(([reqs, test, dev]) => {
-      setRequests(reqs);
-      setTestimonies(test);
-      setDevotion(dev[0] || null);
-    }).finally(() => setLoading(false));
+    // Simulate API delay
+    const timer = setTimeout(() => {
+      setRequests(mockRequests.slice(0, 4));
+      setTestimonies(mockTestimonies.slice(0, 3));
+      setDevotion(mockDevotion);
+      setLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
   }, []);
 
   const enableReminders = async () => {

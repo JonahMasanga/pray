@@ -1,20 +1,29 @@
 import { useState, useEffect } from 'react';
-//import { base44 } from '@/api/base44Client';
 import DonationForm from '@/components/DonationForm';
 import { Heart, Shield, Globe } from 'lucide-react';
+
+// Mock data
+const mockDonations = [
+  { id: 1, amount: 50, created_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) },
+  { id: 2, amount: 100, created_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) },
+  { id: 3, amount: 25, created_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
+  { id: 4, amount: 75, created_date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000) },
+  { id: 5, amount: 150, created_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) },
+];
 
 export default function Donate() {
   const [totalRaised, setTotalRaised] = useState(0);
   const [donorCount, setDonorCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.Donation
-      .list('-created_date', 500)
-      .then((donations) => {
-        setTotalRaised(donations.reduce((sum, d) => sum + (d.amount || 0), 0));
-        setDonorCount(donations.length);
-      })
-      .catch(() => {});
+    // Simulate API delay
+    setTimeout(() => {
+      const total = mockDonations.reduce((sum, d) => sum + (d.amount || 0), 0);
+      setTotalRaised(total);
+      setDonorCount(mockDonations.length);
+      setLoading(false);
+    }, 500);
   }, []);
 
   return (
@@ -38,12 +47,12 @@ export default function Donate() {
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="bg-white rounded-2xl p-6 text-center shadow-sm border border-stone-100">
             <p className="font-display text-3xl font-semibold text-[#1A1830]">
-              ${totalRaised.toLocaleString()}
+              {loading ? '-' : `$${totalRaised.toLocaleString()}`}
             </p>
             <p className="text-sm text-stone-400 mt-1">Total Raised</p>
           </div>
           <div className="bg-white rounded-2xl p-6 text-center shadow-sm border border-stone-100">
-            <p className="font-display text-3xl font-semibold text-[#1A1830]">{donorCount}</p>
+            <p className="font-display text-3xl font-semibold text-[#1A1830]">{loading ? '-' : donorCount}</p>
             <p className="text-sm text-stone-400 mt-1">Generous Donors</p>
           </div>
         </div>

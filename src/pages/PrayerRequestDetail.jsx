@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-//import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Heart, Globe, Lock, Check } from 'lucide-react';
 import CommentSection from '@/components/CommentSection';
 import moment from 'moment';
@@ -14,6 +13,54 @@ const categoryLabels = {
   other: 'Other',
 };
 
+// Mock data
+const mockRequests = [
+  {
+    id: 1,
+    title: 'Prayer for healing',
+    description: 'Please pray for my family member who is recovering from surgery. The doctors are hopeful, but we\'re trusting in God\'s healing power.',
+    category: 'health',
+    prayer_count: 24,
+    is_public: true,
+    is_answered: false,
+    requester_name: 'Sarah',
+    created_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 2,
+    title: 'Strength during trials',
+    description: 'Going through a difficult time at work. Need wisdom and courage to navigate this season.',
+    category: 'career',
+    prayer_count: 18,
+    is_public: true,
+    is_answered: false,
+    requester_name: 'Michael',
+    created_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 3,
+    title: 'Financial breakthrough',
+    description: 'Praying for a job opportunity that will provide for my family and allow us to give back to our community.',
+    category: 'financial',
+    prayer_count: 32,
+    is_public: true,
+    is_answered: false,
+    requester_name: 'Jennifer',
+    created_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 4,
+    title: 'Family restoration',
+    description: 'Seeking prayers for reconciliation and healing in family relationships that have been strained.',
+    category: 'family',
+    prayer_count: 45,
+    is_public: true,
+    is_answered: false,
+    requester_name: 'David',
+    created_date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+  },
+];
+
 export default function PrayerRequestDetail() {
   const { id } = useParams();
   const [request, setRequest] = useState(null);
@@ -25,19 +72,20 @@ export default function PrayerRequestDetail() {
   const [praying, setPraying] = useState(false);
 
   useEffect(() => {
-    base44.entities.PrayerRequest
-      .get(id)
-      .then(setRequest)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    // Simulate API delay
+    const timer = setTimeout(() => {
+      const found = mockRequests.find((r) => r.id === parseInt(id));
+      setRequest(found || null);
+      setLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
   }, [id]);
 
   const handlePray = async () => {
-    if (prayed) return;
+    if (prayed || !request) return;
     setPraying(true);
     try {
       const newCount = (request.prayer_count || 0) + 1;
-      await base44.entities.PrayerRequest.update(id, { prayer_count: newCount });
       setRequest({ ...request, prayer_count: newCount });
       localStorage.setItem(`prayed_${id}`, 'true');
       setPrayed(true);
