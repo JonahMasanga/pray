@@ -1,5 +1,4 @@
 import { useState } from 'react';
-//import { base44 } from '@/api/base44Client';
 import { Loader2, Send } from 'lucide-react';
 
 const postTypes = [
@@ -14,23 +13,46 @@ export default function CommunityPostForm({ onSubmit }) {
   const [content, setContent] = useState('');
   const [postType, setPostType] = useState('general');
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!authorName.trim() || !content.trim()) return;
+    if (!authorName.trim() || !content.trim()) {
+      setError('Please fill in all required fields');
+      return;
+    }
+    setError('');
     setSubmitting(true);
+    
     try {
-      await base44.entities.CommunityPost.create({
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Create new community post object
+      const newPost = {
+        id: Math.floor(Math.random() * 10000),
         author_name: authorName.trim(),
         content: content.trim(),
         post_type: postType,
-      });
+        created_date: new Date(),
+        likes: 0,
+        replies: 0,
+      };
+      
+      // Store in localStorage
+      const existingPosts = JSON.parse(localStorage.getItem('communityPosts') || '[]');
+      localStorage.setItem('communityPosts', JSON.stringify([newPost, ...existingPosts]));
+      
+      // Reset form
       setAuthorName('');
       setContent('');
       setPostType('general');
+      
+      // Notify parent component
       if (onSubmit) onSubmit();
     } catch (err) {
       console.error(err);
+      setError('Failed to post. Please try again.');
     }
     setSubmitting(false);
   };
@@ -38,6 +60,11 @@ export default function CommunityPostForm({ onSubmit }) {
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-100 mb-8">
       <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+            {error}
+          </div>
+        )}
         <div>
           <label htmlFor="cp-name" className="block text-sm font-medium text-stone-700 mb-1.5">
             Your Name
@@ -91,13 +118,9 @@ export default function CommunityPostForm({ onSubmit }) {
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1A1830] text-white hover:bg-[#2A2840] transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Posting...
-              </>
+              <><Loader2 className="w-4 h-4 animate-spin" /> Posting...</>
             ) : (
-              <>
-                <Send className="w-4 h-4" /> Post
-              </>
+              <><Send className="w-4 h-4" /> Post</>
             )}
           </button>
         </div>

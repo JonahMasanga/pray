@@ -1,5 +1,4 @@
 import { useState } from 'react';
-//import { base44 } from '@/api/base44Client';
 import { Globe, Lock, Loader2, Send } from 'lucide-react';
 
 export default function PrayerRequestForm({ onSubmit }) {
@@ -9,13 +8,24 @@ export default function PrayerRequestForm({ onSubmit }) {
   const [category, setCategory] = useState('other');
   const [isPublic, setIsPublic] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim()) return;
+    if (!requesterName.trim() || !title.trim() || !description.trim()) {
+      setError('Please fill in all required fields');
+      return;
+    }
+    setError('');
     setSubmitting(true);
+    
     try {
-      await base44.entities.PrayerRequest.create({
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Create new prayer request object
+      const newRequest = {
+        id: Math.floor(Math.random() * 10000),
         requester_name: requesterName.trim(),
         title: title.trim(),
         description: description.trim(),
@@ -23,15 +33,25 @@ export default function PrayerRequestForm({ onSubmit }) {
         is_public: isPublic,
         prayer_count: 0,
         is_answered: false,
-      });
+        created_date: new Date(),
+      };
+      
+      // Store in localStorage
+      const existingRequests = JSON.parse(localStorage.getItem('prayerRequests') || '[]');
+      localStorage.setItem('prayerRequests', JSON.stringify([newRequest, ...existingRequests]));
+      
+      // Reset form
       setRequesterName('');
       setTitle('');
       setDescription('');
       setCategory('other');
       setIsPublic(true);
+      
+      // Notify parent component
       if (onSubmit) onSubmit();
     } catch (err) {
       console.error(err);
+      setError('Failed to submit prayer request. Please try again.');
     }
     setSubmitting(false);
   };
@@ -39,6 +59,11 @@ export default function PrayerRequestForm({ onSubmit }) {
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-100 mb-8">
       <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+            {error}
+          </div>
+        )}
         <div>
           <label htmlFor="pr-name" className="block text-sm font-medium text-stone-700 mb-1.5">
             Your Name

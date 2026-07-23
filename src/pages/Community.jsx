@@ -1,22 +1,53 @@
 import { useState, useEffect } from 'react';
-//import { base44 } from '@/api/base44Client';
 import { Plus, X, MessageCircle } from 'lucide-react';
 import CommunityPostForm from '@/components/CommunityPostForm';
 import CommunityPostCard from '@/components/CommunityPostCard';
+
+// Mock data
+const mockPosts = [
+  {
+    id: 1,
+    author_name: 'Grace',
+    content: 'Feeling grateful for God\'s faithfulness. He never leaves us alone.',
+    post_type: 'praise',
+    created_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    likes: 12,
+    replies: 3,
+  },
+  {
+    id: 2,
+    author_name: 'John',
+    content: 'How do you find time for daily prayer amidst a busy schedule?',
+    post_type: 'question',
+    created_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    likes: 8,
+    replies: 5,
+  },
+  {
+    id: 3,
+    author_name: 'Maria',
+    content: 'Just finished reading a powerful devotion. Feeling blessed and encouraged.',
+    post_type: 'general',
+    created_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    likes: 15,
+    replies: 2,
+  },
+];
 
 export default function Community() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
-  const loadPosts = async () => {
-    try {
-      const data = await base44.entities.CommunityPost.list('-created_date', 50);
-      setPosts(data);
-    } catch (err) {
-      console.error(err);
-    }
-    setLoading(false);
+  const loadPosts = () => {
+    // Simulate API delay
+    setTimeout(() => {
+      // Get posts from localStorage if available, otherwise use mock data
+      const storedPosts = JSON.parse(localStorage.getItem('communityPosts') || '[]');
+      const allPosts = [...storedPosts, ...mockPosts];
+      setPosts(allPosts);
+      setLoading(false);
+    }, 500);
   };
 
   useEffect(() => {
