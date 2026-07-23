@@ -15,5 +15,9 @@ export default defineConfig({
       visualEditAgent: true
     }),
     react(),
-  ]
+  ],
+  // Increase chunk size warning limit to 2000 KB to reduce noisy warnings for larger chunks
+  build: {
+    chunkSizeWarningLimit: 2000
+  }
 });
