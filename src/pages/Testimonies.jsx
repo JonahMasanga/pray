@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+//import { base44 } from '@/api/base44Client';
 import { Plus, Sparkles, Loader2, X } from 'lucide-react';
 import TestimonyCard from '@/components/TestimonyCard';
 
