@@ -4,69 +4,35 @@
  * calling code never imports Firestore APIs directly.
  */
 import {
+  Timestamp,
+  addDoc,
   collection,
   doc,
-  addDoc,
   getDoc,
   getDocs,
-  updateDoc,
-  query,
-  where,
-  orderBy,
-  serverTimestamp,
   increment,
   limit,
-  Timestamp,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+const PRAYER_REQUESTS = 'prayer_requests';
 
-/**
- * Convert a Firestore document snapshot to a plain JS object.
- * Firestore Timestamps are converted to JS Date objects.
- */
-function docToObject(snapshot) {
-  const data = snapshot.data();
-  if (!data) return null;
-  const result = { ...data, id: snapshot.id };
-  // Convert Firestore Timestamp fields to Date
-  for (const key of Object.keys(result)) {
-    if (result[key] && typeof result[key].toDate === 'function') {
-      result[key] = result[key].toDate();
-    }
-  }
-  return result;
-}
-
-// ─── Prayer Requests ─────────────────────────────────────────────────────────
-
-
- export async function addPrayerRequest(data) {
-  const now = Timestamp.now();
-
-  // Remove undefined values (Firestore rejects them)
-  const cleaned = Object.fromEntries(
-    Object.entries(data || {}).filter(([, v]) => v !== undefined)
-  );
-
-  const payload = {
-    ...cleaned,
-    title: cleaned.title ?? '',
-    description: cleaned.description ?? '',
-    category: cleaned.category ?? 'general',
-    requester_name: cleaned.requester_name ?? 'Anonymous',
-    is_public: typeof cleaned.is_public === 'boolean' ? cleaned.is_public : true,
-    prayer_count: 0,
-    is_answered: false,
-    created_date_client: now,
-    created_date: serverTimestamp(),
+function docToObject(docSnap) {
+  const data = docSnap.data() || {};
+  return {
+    id: docSnap.id,
+    ...data,
+    created_date:
+      data.created_date?.toDate?.() ||
+      data.created_date_client?.toDate?.() ||
+      data.created_date ||
+      null,
   };
-
-  const docRef = await addDoc(collection(db, PRAYER_REQUESTS), payload);
-  return docRef.id;
 }
-
 
 const PRESET_PRAYER_REQUESTS = [
   {
@@ -104,17 +70,33 @@ const PRESET_PRAYER_REQUESTS = [
   },
 ];
 
-export async function getPrayerRequestById(id) {
-  if (!id) return null;
-  const ref = doc(db, PRAYER_REQUESTS, id);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return null;
-  return docToObject(snap);
+export async function addPrayerRequest(data) {
+  const now = Timestamp.now();
+
+  // Firestore rejects undefined values
+  const cleaned = Object.fromEntries(
+    Object.entries(data || {}).filter(([, v]) => v !== undefined)
+  );
+
+  const payload = {
+    ...cleaned,
+    title: cleaned.title ?? '',
+    description: cleaned.description ?? '',
+    category: cleaned.category ?? 'general',
+    requester_name: cleaned.requester_name ?? 'Anonymous',
+    is_public: typeof cleaned.is_public === 'boolean' ? cleaned.is_public : true,
+    prayer_count: 0,
+    is_answered: false,
+    created_date_client: now,
+    created_date: serverTimestamp(),
+  };
+
+  const docRef = await addDoc(collection(db, PRAYER_REQUESTS), payload);
+  return docRef.id;
 }
 
 export async function getPrayerRequests(max = 50) {
   try {
-    // Prefer server timestamp ordering
     const q = query(
       collection(db, PRAYER_REQUESTS),
       orderBy('created_date', 'desc'),
@@ -122,9 +104,12 @@ export async function getPrayerRequests(max = 50) {
     );
     const snapshot = await getDocs(q);
     const docs = snapshot.docs.map(docToObject);
-    return docs.length ? docs : PRESET_PRAYER_REQUESTS.slice(0, max);
-  } catch {
-    // Fallback for environments where created_date ordering/index isn't ready
+    if (docs.length) return docs;
+  } catch (err) {
+    console.warn('Primary query failed:', err);
+  }
+
+  try {
     const q2 = query(
       collection(db, PRAYER_REQUESTS),
       orderBy('created_date_client', 'desc'),
@@ -132,17 +117,43 @@ export async function getPrayerRequests(max = 50) {
     );
     const snapshot2 = await getDocs(q2);
     const docs2 = snapshot2.docs.map(docToObject);
-    return docs2.length ? docs2 : PRESET_PRAYER_REQUESTS.slice(0, max);
+    if (docs2.length) return docs2;
+  } catch (err) {
+    console.warn('Secondary query failed:', err);
+  }
+
+  return PRESET_PRAYER_REQUESTS.slice(0, max);
+}
+
+export async function getPrayerRequestById(id) {
+  if (!id) return null;
+
+  // Return preset immediately for preset IDs
+  if (id.startsWith('preset-')) {
+    return PRESET_PRAYER_REQUESTS.find((p) => p.id === id) || null;
+  }
+
+  try {
+    const ref = doc(db, PRAYER_REQUESTS, id);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return null;
+    return docToObject(snap);
+  } catch (err) {
+    console.warn('getPrayerRequestById failed:', err);
+    return null;
   }
 }
 
 export async function incrementPrayerCount(id) {
-  if (!id) return;
-  const ref = doc(db, PRAYER_REQUESTS, id);
-  await updateDoc(ref, {
-    prayer_count: increment(1),
-  });
+  if (!id || id.startsWith('preset-')) return;
+  try {
+    const ref = doc(db, PRAYER_REQUESTS, id);
+    await updateDoc(ref, { prayer_count: increment(1) });
+  } catch (err) {
+    console.warn('incrementPrayerCount failed:', err);
+  }
 }
+
 // ─── Testimonies ─────────────────────────────────────────────────────────────
 
 const TESTIMONIES = 'testimonies';
