@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Send, Heart, MessageCircle, Loader2 } from 'lucide-react';
-import moment from 'moment';
+import { format } from 'date-fns';
 import { getComments, addComment } from '@/lib/db';
 
 export default function CommentSection({ prayerRequestId }) {
@@ -79,7 +79,7 @@ export default function CommentSection({ prayerRequestId }) {
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-stone-600 leading-relaxed">{c.content}</p>
                 <p className="text-xs text-stone-400 mt-0.5">
-                  {moment(c.created_date).format('MMM D, h:mm a')}
+                  {format(new Date(c.created_date), 'MMM d, h:mm a')}
                 </p>
               </div>
             </div>

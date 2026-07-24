@@ -5,6 +5,7 @@ import PrayerRequestCard from '@/components/PrayerRequestCard';
 import TestimonyCard from '@/components/TestimonyCard';
 import DevotionCard from '@/components/DevotionCard';
 import { getPrayerRequests, getTestimonies } from '@/lib/db';
+import { useAuth } from '@/lib/AuthContext';
 
 const mockTestimonies = [
   {
@@ -43,8 +44,10 @@ export default function Home() {
   const [testimonies, setTestimonies] = useState([]);
   const [devotion, setDevotion] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     const load = async () => {
       try {
         const [firestoreRequests, firestoreTestimonies] = await Promise.all([
@@ -69,7 +72,7 @@ export default function Home() {
     };
 
     load();
-  }, []);
+  }, [isAuthenticated]);
 
   const enableReminders = async () => {
     if ('Notification' in window) {

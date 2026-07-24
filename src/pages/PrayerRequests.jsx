@@ -3,6 +3,7 @@ import { Plus, Heart, X } from 'lucide-react';
 import PrayerRequestCard from '@/components/PrayerRequestCard';
 import PrayerRequestForm from '@/components/PrayerRequestForm';
 import { getPrayerRequests } from '@/lib/db';
+import { useAuth } from '@/lib/AuthContext';
 
 const categories = [
   { value: 'all', label: 'All' },
@@ -20,10 +21,12 @@ export default function PrayerRequests() {
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [category, setCategory] = useState('all');
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     loadRequests();
-  }, []);
+  }, [isAuthenticated]);
 
   const loadRequests = async () => {
     setLoading(true);

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Heart, Globe, Lock, Check } from 'lucide-react';
 import CommentSection from '@/components/CommentSection';
-import moment from 'moment';
+import { format } from 'date-fns';
 import { getPrayerRequestById, incrementPrayerCount } from '@/lib/db';
 
 const categoryLabels = {
@@ -107,7 +107,7 @@ export default function PrayerRequestDetail() {
               </span>
             )}
             <span className="text-xs text-stone-400 ml-auto">
-              {moment(request.created_date).format('MMMM D, YYYY')}
+              {format(new Date(request.created_date), 'MMMM d, yyyy')}
             </span>
           </div>
           <h1 className="font-display text-2xl lg:text-3xl font-semibold text-[#1A1830] mb-4 leading-tight">

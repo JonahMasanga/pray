@@ -12,8 +12,27 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // Increase chunk size warning limit (in KB) to reduce noisy warnings for larger chunks
   build: {
-    chunkSizeWarningLimit: 2000
-  }
+    minify: 'esbuild',
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/firebase')) {
+            return 'vendor-firebase';
+          }
+          if (
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/react-dom/') ||
+            id.includes('node_modules/react-router-dom/')
+          ) {
+            return 'vendor-react';
+          }
+          if (id.includes('node_modules/@tanstack/')) {
+            return 'vendor-query';
+          }
+        },
+      },
+    },
+  },
 });

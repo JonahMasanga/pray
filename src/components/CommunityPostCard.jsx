@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle, Send, Loader2 } from 'lucide-react';
-import moment from 'moment';
+import { formatDistanceToNow } from 'date-fns';
 
 const typeConfig = {
   praise: { label: 'Praise', cls: 'bg-amber-50 text-amber-600' },
@@ -71,7 +71,7 @@ export default function CommunityPostCard({ post }) {
           {type.label}
         </span>
         <span className="text-xs text-stone-400 ml-auto">
-          {moment(post.created_date).fromNow()}
+          {formatDistanceToNow(new Date(post.created_date), { addSuffix: true })}
         </span>
       </div>
       <div className="flex items-center gap-2.5 mb-3">
@@ -101,7 +101,7 @@ export default function CommunityPostCard({ post }) {
                 </div>
                 <span className="font-medium text-stone-700 text-xs">{reply.author_name}</span>
                 <span className="text-[10px] text-stone-400 ml-auto">
-                  {moment(reply.created_date).fromNow()}
+                   {formatDistanceToNow(new Date(reply.created_date), { addSuffix: true })}
                 </span>
               </div>
               <p className="text-stone-600 text-sm leading-relaxed">{reply.content}</p>

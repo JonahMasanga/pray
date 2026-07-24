@@ -3,6 +3,7 @@ import { Plus, X, MessageCircle } from 'lucide-react';
 import CommunityPostForm from '@/components/CommunityPostForm';
 import CommunityPostCard from '@/components/CommunityPostCard';
 import { getCommunityPosts } from '@/lib/db';
+import { useAuth } from '@/lib/AuthContext';
 
 // Mock data
 const mockPosts = [
@@ -39,10 +40,12 @@ export default function Community() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     loadPosts();
-  }, []);
+  }, [isAuthenticated]);
 
   const loadPosts = async () => {
     try {

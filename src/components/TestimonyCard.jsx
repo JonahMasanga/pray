@@ -1,5 +1,5 @@
 import { Sparkles, BookOpen } from 'lucide-react';
-import moment from 'moment';
+import { format } from 'date-fns';
 
 export default function TestimonyCard({ testimony }) {
   return (
@@ -9,7 +9,7 @@ export default function TestimonyCard({ testimony }) {
           <Sparkles className="w-4 h-4 text-amber-500" />
         </div>
         <span className="text-xs text-stone-400">
-          {moment(testimony.created_date).format('MMM D, YYYY')}
+          {format(new Date(testimony.created_date), 'MMM d, yyyy')}
         </span>
       </div>
       <h3 className="font-heading text-lg font-semibold text-stone-800 mb-2 leading-snug">

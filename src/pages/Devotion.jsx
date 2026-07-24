@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import DevotionCard from '@/components/DevotionCard';
 import { BookOpen, Calendar } from 'lucide-react';
-import moment from 'moment';
+import { format } from 'date-fns';
 
 // Mock data
 const mockDevotions = [
@@ -54,9 +54,9 @@ export default function Devotion() {
     }, 500);
   }, []);
 
-  const today = moment().format('YYYY-MM-DD');
+  const today = format(new Date(), 'yyyy-MM-dd');
   const todaysDevotion = devotions.find(
-    (d) => moment(d.date).format('YYYY-MM-DD') === today
+    (d) => format(new Date(d.date), 'yyyy-MM-dd') === today
   );
   const latestDevotion = todaysDevotion || devotions[0];
   const pastDevotions = devotions.filter((d) => d.id !== latestDevotion?.id);
@@ -67,7 +67,7 @@ export default function Devotion() {
         {/* Header */}
         <div className="mb-8">
           <p className="text-[#C9A961] text-sm font-medium tracking-widest uppercase mb-2">
-            {moment().format('dddd, MMMM D')}
+            {format(new Date(), 'EEEE, MMMM d')}
           </p>
           <h1 className="font-display text-3xl lg:text-4xl font-semibold text-[#1A1830]">
             Daily Devotion
@@ -95,7 +95,7 @@ export default function Devotion() {
                       className="bg-white rounded-xl p-4 shadow-sm border border-stone-100"
                     >
                       <p className="text-xs text-stone-400 mb-1">
-                        {moment(d.date).format('MMMM D, YYYY')}
+                        {format(new Date(d.date), 'MMMM d, yyyy')}
                       </p>
                       <p className="text-sm text-stone-500 italic">"{d.verse_text}"</p>
                       <p className="text-xs text-[#C9A961] mt-1">— {d.verse_reference}</p>
