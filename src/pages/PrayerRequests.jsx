@@ -14,73 +14,10 @@ const categories = [
   { value: 'other', label: 'Other' },
 ];
 
-// Mock data
-const mockRequests = [
-  {
-    id: 1,
-    title: 'Prayer for healing',
-    description: 'Please pray for my family member who is recovering from surgery.',
-    category: 'health',
-    prayer_count: 24,
-    is_public: true,
-    requester_name: 'Sarah',
-    created_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: 2,
-    title: 'Strength during trials',
-    description: 'Going through a difficult time at work. Need wisdom and courage.',
-    category: 'career',
-    prayer_count: 18,
-    is_public: true,
-    requester_name: 'Michael',
-    created_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: 3,
-    title: 'Financial breakthrough',
-    description: 'Praying for a job opportunity that will provide for my family.',
-    category: 'financial',
-    prayer_count: 32,
-    is_public: true,
-    requester_name: 'Jennifer',
-    created_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: 4,
-    title: 'Family restoration',
-    description: 'Seeking prayers for reconciliation and healing in family relationships.',
-    category: 'family',
-    prayer_count: 45,
-    is_public: true,
-    requester_name: 'David',
-    created_date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: 5,
-    title: 'Spiritual growth',
-    description: 'Praying for deeper faith and connection with God.',
-    category: 'spiritual',
-    prayer_count: 12,
-    is_public: true,
-    requester_name: 'Amanda',
-    created_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: 6,
-    title: 'Health recovery',
-    description: 'Please pray for my recovery from illness.',
-    category: 'health',
-    prayer_count: 28,
-    is_public: true,
-    requester_name: 'James',
-    created_date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-  },
-];
-
 export default function PrayerRequests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [category, setCategory] = useState('all');
 
@@ -89,22 +26,18 @@ export default function PrayerRequests() {
   }, []);
 
   const loadRequests = async () => {
+    setLoading(true);
+    setError('');
     try {
       const firestoreRequests = await getPrayerRequests();
-
-      // Merge Firestore results with mock data so seed content is always visible.
-      // Firestore records (keyed by Firestore doc ID) override mock records (keyed by numeric id).
-      const mergedMap = new Map();
-      mockRequests.forEach((r) => mergedMap.set(String(r.id), r));
-      firestoreRequests.forEach((r) => mergedMap.set(String(r.id), r));
-
-      const allRequests = Array.from(mergedMap.values()).sort(
+      const sortedRequests = [...firestoreRequests].sort(
         (a, b) => new Date(b.created_date) - new Date(a.created_date)
       );
-
-      setRequests(allRequests);
+      setRequests(sortedRequests);
     } catch (err) {
       console.error('Failed to load prayer requests:', err);
+      setRequests([]);
+      setError('Unable to load prayer requests right now. Please try again.');
     }
     setLoading(false);
   };
@@ -158,6 +91,8 @@ export default function PrayerRequests() {
         {/* List */}
         {loading ? (
           <div className="text-center py-20 text-stone-400">Loading prayer requests...</div>
+        ) : error ? (
+          <div className="text-center py-20 text-stone-500">{error}</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <Heart className="w-12 h-12 mx-auto text-stone-300 mb-4" />

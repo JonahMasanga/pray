@@ -6,50 +6,6 @@ import TestimonyCard from '@/components/TestimonyCard';
 import DevotionCard from '@/components/DevotionCard';
 import { getPrayerRequests, getTestimonies } from '@/lib/db';
 
-// Mock data
-const mockRequests = [
-  {
-    id: 1,
-    title: 'Prayer for healing',
-    description: 'Please pray for my family member who is recovering from surgery.',
-    category: 'health',
-    prayer_count: 24,
-    is_public: true,
-    requester_name: 'Sarah',
-    created_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: 2,
-    title: 'Strength during trials',
-    description: 'Going through a difficult time at work. Need wisdom and courage.',
-    category: 'career',
-    prayer_count: 18,
-    is_public: true,
-    requester_name: 'Michael',
-    created_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: 3,
-    title: 'Financial breakthrough',
-    description: 'Praying for a job opportunity that will provide for my family.',
-    category: 'financial',
-    prayer_count: 32,
-    is_public: true,
-    requester_name: 'Jennifer',
-    created_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: 4,
-    title: 'Family restoration',
-    description: 'Seeking prayers for reconciliation and healing in family relationships.',
-    category: 'family',
-    prayer_count: 45,
-    is_public: true,
-    requester_name: 'David',
-    created_date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-  },
-];
-
 const mockTestimonies = [
   {
     id: 1,
@@ -96,19 +52,15 @@ export default function Home() {
           getTestimonies(),
         ]);
 
-        // Merge Firestore results with mock seed data; Firestore records take precedence.
-        const reqMap = new Map();
-        mockRequests.forEach((r) => reqMap.set(String(r.id), r));
-        firestoreRequests.forEach((r) => reqMap.set(String(r.id), r));
-        const allRequests = Array.from(reqMap.values()).sort(
+        const sortedRequests = [...firestoreRequests].sort(
           (a, b) => new Date(b.created_date) - new Date(a.created_date)
         );
 
-        setRequests(allRequests.slice(0, 4));
+        setRequests(sortedRequests.slice(0, 4));
         setTestimonies([...firestoreTestimonies, ...mockTestimonies].slice(0, 3));
       } catch (err) {
         console.error('Failed to load home data:', err);
-        setRequests(mockRequests.slice(0, 4));
+        setRequests([]);
         setTestimonies(mockTestimonies.slice(0, 3));
       }
 
