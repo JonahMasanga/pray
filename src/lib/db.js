@@ -56,13 +56,6 @@ function docToObject(snapshot) {
   return docRef.id;
 }
 
-export async function incrementPrayerCount(id) {
-  if (!id) return;
-  const ref = doc(db, PRAYER_REQUESTS, id);
-  await updateDoc(ref, {
-    prayer_count: increment(1),
-  });
-}
 
 const PRESET_PRAYER_REQUESTS = [
   {
@@ -100,6 +93,14 @@ const PRESET_PRAYER_REQUESTS = [
   },
 ];
 
+export async function getPrayerRequestById(id) {
+  if (!id) return null;
+  const ref = doc(db, PRAYER_REQUESTS, id);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return null;
+  return docToObject(snap);
+}
+
 export async function getPrayerRequests(max = 50) {
   try {
     // Prefer server timestamp ordering
@@ -122,6 +123,14 @@ export async function getPrayerRequests(max = 50) {
     const docs2 = snapshot2.docs.map(docToObject);
     return docs2.length ? docs2 : PRESET_PRAYER_REQUESTS.slice(0, max);
   }
+}
+
+export async function incrementPrayerCount(id) {
+  if (!id) return;
+  const ref = doc(db, PRAYER_REQUESTS, id);
+  await updateDoc(ref, {
+    prayer_count: increment(1),
+  });
 }
 // ─── Testimonies ─────────────────────────────────────────────────────────────
 
