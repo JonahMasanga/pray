@@ -1,29 +1,32 @@
 import { useEffect, useRef } from 'react';
 import { paymentConfig } from '@/lib/payment-config';
+import { loadPayPalSdk } from '@/lib/loadPayPalSdk';
 
 export default function DonationForm() {
   const paypalRef = useRef(null);
 
   useEffect(() => {
-    const renderButton = () => {
-      if (window.paypal?.HostedButtons && paypalRef.current) {
-        paypalRef.current.innerHTML = '';
-        window.paypal.HostedButtons({
-          hostedButtonId: paymentConfig.paypal.hostedButtonId,
-        }).render(paypalRef.current);
-      }
-    };
-    if (window.paypal) {
-      renderButton();
-    } else {
-      const interval = setInterval(() => {
-        if (window.paypal) {
-          clearInterval(interval);
-          renderButton();
+    let cancelled = false;
+
+    loadPayPalSdk()
+      .then((paypal) => {
+        if (!cancelled && paypal?.HostedButtons && paypalRef.current) {
+          paypalRef.current.innerHTML = '';
+          paypal.HostedButtons({
+            hostedButtonId: paymentConfig.paypal.hostedButtonId,
+          }).render(paypalRef.current);
         }
-      }, 200);
-      return () => clearInterval(interval);
-    }
+      })
+      .catch(() => {
+        if (!cancelled && paypalRef.current) {
+          paypalRef.current.innerHTML =
+            '<p class="text-sm text-red-400 text-center">Unable to load payment button. Please try again later.</p>';
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
