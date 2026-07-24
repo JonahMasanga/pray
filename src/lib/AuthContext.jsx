@@ -41,24 +41,19 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await auth.signOut();
+      setUser(null);
+      setIsAuthenticated(false);
     } catch (error) {
       console.error('Sign-out failed:', error);
     }
-    setUser(null);
-    setIsAuthenticated(false);
   };
 
-  const navigateToLogin = () => {
-    // No dedicated login page; anonymous auth is used automatically.
-  };
-
-  const checkUserAuth = () => {
-    // Auth state is managed by the onAuthStateChanged listener above.
-  };
-
-  const checkAppState = () => {
-    // No external app-settings endpoint needed with Firebase.
-  };
+  // navigateToLogin, checkUserAuth, and checkAppState are kept as no-ops to satisfy
+  // the AuthContext contract used by consumer components (e.g. App.jsx). With Firebase
+  // Anonymous Auth the app never needs a manual login redirect or explicit auth checks.
+  const navigateToLogin = () => {};
+  const checkUserAuth = () => {};
+  const checkAppState = () => {};
 
   return (
     <AuthContext.Provider value={{ 
