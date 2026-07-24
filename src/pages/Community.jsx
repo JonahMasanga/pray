@@ -43,7 +43,10 @@ export default function Community() {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setLoading(true);
+      return;
+    }
     loadPosts();
   }, [isAuthenticated]);
 

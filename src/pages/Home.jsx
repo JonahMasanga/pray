@@ -47,7 +47,10 @@ export default function Home() {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setLoading(true);
+      return;
+    }
     const load = async () => {
       try {
         const [firestoreRequests, firestoreTestimonies] = await Promise.all([

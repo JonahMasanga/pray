@@ -24,7 +24,11 @@ export default function PrayerRequests() {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setLoading(true);
+      setError('');
+      return;
+    }
     loadRequests();
   }, [isAuthenticated]);
 
