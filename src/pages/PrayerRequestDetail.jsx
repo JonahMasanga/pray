@@ -74,24 +74,22 @@ export default function PrayerRequestDetail() {
   useEffect(() => {
     // Simulate API delay
     const timer = setTimeout(() => {
-      const numId = parseInt(id);
-      
-      // First check localStorage for user-created prayers
+      const numId = parseInt(id, 10);
+
       const storedRequests = JSON.parse(localStorage.getItem('prayerRequests') || '[]');
-      const storedRequest = storedRequests.find((r) => r.id === numId);
-      
-      if (storedRequest) {
-        // Parse the date if it's a string
-        setRequest({
-          ...storedRequest,
-          created_date: new Date(storedRequest.created_date)
-        });
-      } else {
-        // Fall back to mock data
-        const mockRequest = mockRequests.find((r) => r.id === numId);
-        setRequest(mockRequest || null);
-      }
-      
+      const mockRequest = mockRequests.find((r) => r.id === numId);
+      const storedRequest = storedRequests.find((r) => Number(r.id) === numId);
+
+      // Merge by id with stored taking precedence, so updated prayer_count survives refresh
+      const merged = storedRequest
+        ? {
+            ...(mockRequest || {}),
+            ...storedRequest,
+            created_date: new Date(storedRequest.created_date || mockRequest?.created_date || new Date()),
+          }
+        : (mockRequest ? { ...mockRequest } : null);
+
+      setRequest(merged);
       setLoading(false);
     }, 500);
     return () => clearTimeout(timer);
@@ -102,9 +100,20 @@ export default function PrayerRequestDetail() {
     setPraying(true);
     try {
       const newCount = (request.prayer_count || 0) + 1;
-      setRequest({ ...request, prayer_count: newCount });
+      const updatedRequest = { ...request, prayer_count: newCount };
+      setRequest(updatedRequest);
       localStorage.setItem(`prayed_${id}`, 'true');
       setPrayed(true);
+
+      // Persist updated count to localStorage collection
+      const existing = JSON.parse(localStorage.getItem('prayerRequests') || '[]');
+      const exists = existing.some((r) => Number(r.id) === Number(request.id));
+
+      const updated = exists
+        ? existing.map((r) => (Number(r.id) === Number(request.id) ? { ...r, prayer_count: newCount } : r))
+        : [{ ...updatedRequest }, ...existing];
+
+      localStorage.setItem('prayerRequests', JSON.stringify(updated));
     } catch (err) {
       console.error(err);
     }
