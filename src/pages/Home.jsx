@@ -5,6 +5,7 @@ import PrayerRequestCard from '@/components/PrayerRequestCard';
 import TestimonyCard from '@/components/TestimonyCard';
 import DevotionCard from '@/components/DevotionCard';
 import { getPrayerRequests, getTestimonies } from '@/lib/db';
+import { mergeRequestsWithFallback } from '@/lib/requestMerge';
 
 // Mock data
 const mockRequests = [
@@ -96,19 +97,13 @@ export default function Home() {
           getTestimonies(),
         ]);
 
-        // Merge Firestore results with mock seed data; Firestore records take precedence.
-        const reqMap = new Map();
-        mockRequests.forEach((r) => reqMap.set(String(r.id), r));
-        firestoreRequests.forEach((r) => reqMap.set(String(r.id), r));
-        const allRequests = Array.from(reqMap.values()).sort(
-          (a, b) => new Date(b.created_date) - new Date(a.created_date)
-        );
+        const allRequests = mergeRequestsWithFallback(firestoreRequests, mockRequests);
 
         setRequests(allRequests.slice(0, 4));
         setTestimonies([...firestoreTestimonies, ...mockTestimonies].slice(0, 3));
       } catch (err) {
         console.error('Failed to load home data:', err);
-        setRequests(mockRequests.slice(0, 4));
+        setRequests(mergeRequestsWithFallback([], mockRequests).slice(0, 4));
         setTestimonies(mockTestimonies.slice(0, 3));
       }
 

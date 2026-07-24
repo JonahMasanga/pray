@@ -65,6 +65,7 @@ const mockRequests = [
 export default function PrayerRequestDetail() {
   const { id } = useParams();
   const [request, setRequest] = useState(null);
+  const [isFirestoreBacked, setIsFirestoreBacked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [prayed, setPrayed] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -80,13 +81,19 @@ export default function PrayerRequestDetail() {
 
         if (firestoreRequest) {
           setRequest(firestoreRequest);
+          setIsFirestoreBacked(true);
         } else {
           const numId = parseInt(id, 10);
           const mockRequest = mockRequests.find((r) => r.id === numId) || null;
           setRequest(mockRequest);
+          setIsFirestoreBacked(false);
         }
       } catch (err) {
         console.error('Failed to load prayer request:', err);
+        const numId = parseInt(id, 10);
+        const mockRequest = mockRequests.find((r) => r.id === numId) || null;
+        setRequest(mockRequest);
+        setIsFirestoreBacked(false);
       }
       setLoading(false);
     };
@@ -103,8 +110,9 @@ export default function PrayerRequestDetail() {
       localStorage.setItem(`prayed_${id}`, 'true');
       setPrayed(true);
 
-      // Persist updated prayer count to Firestore (only for Firestore-backed records).
-      await incrementPrayerCount(id);
+      if (isFirestoreBacked) {
+        await incrementPrayerCount(id);
+      }
     } catch (err) {
       console.error('Failed to update prayer count:', err);
     }
