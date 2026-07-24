@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Lock, Globe, Check } from 'lucide-react';
-//import { base44 } from '@/api/base44Client';
 
 const categoryConfig = {
   health: { label: 'Health', cls: 'bg-red-50 text-red-600' },
@@ -24,13 +23,24 @@ export default function PrayerRequestCard({ request }) {
     e.preventDefault();
     e.stopPropagation();
     if (prayed || loading) return;
+
     setLoading(true);
     try {
       const newCount = count + 1;
-      await base44.entities.PrayerRequest.update(request.id, { prayer_count: newCount });
+
+      // Update local state immediately
       setCount(newCount);
-      localStorage.setItem(`prayed_${request.id}`, 'true');
       setPrayed(true);
+      localStorage.setItem(`prayed_${request.id}`, 'true');
+
+      // Persist to localStorage requests collection
+      const existingRequests = JSON.parse(localStorage.getItem('prayerRequests') || '[]');
+      const updatedRequests = existingRequests.map((r) =>
+        String(r.id) === String(request.id)
+          ? { ...r, prayer_count: newCount }
+          : r
+      );
+      localStorage.setItem('prayerRequests', JSON.stringify(updatedRequests));
     } catch (err) {
       console.error(err);
     }

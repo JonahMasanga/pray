@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-//import { base44 } from '@/api/base44Client';
 import { Send, Heart, MessageCircle, Loader2 } from 'lucide-react';
 import moment from 'moment';
 
@@ -14,16 +13,19 @@ export default function CommentSection({ prayerRequestId }) {
     loadComments();
   }, [prayerRequestId]);
 
+  const getStorageKey = () => `prayerComments_${prayerRequestId}`;
+
   const loadComments = async () => {
     try {
-      const data = await base44.entities.Comment.filter(
-        { prayer_request_id: prayerRequestId },
-        'created_date',
-        50
-      );
-      setComments(data);
+      const raw = JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
+      const parsed = raw.map((c) => ({
+        ...c,
+        created_date: new Date(c.created_date),
+      }));
+      setComments(parsed.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
     } catch (err) {
       console.error(err);
+      setComments([]);
     }
     setLoading(false);
   };
@@ -31,13 +33,20 @@ export default function CommentSection({ prayerRequestId }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim()) return;
+
     setSubmitting(true);
     try {
-      await base44.entities.Comment.create({
+      const newComment = {
+        id: Date.now(),
         prayer_request_id: prayerRequestId,
         content: content.trim(),
         type,
-      });
+        created_date: new Date(),
+      };
+
+      const existing = JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
+      localStorage.setItem(getStorageKey(), JSON.stringify([newComment, ...existing]));
+
       setContent('');
       setType('comment');
       loadComments();

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-//import { base44 } from '@/api/base44Client';
 import { MessageCircle, Send, Loader2 } from 'lucide-react';
 import moment from 'moment';
 
@@ -17,16 +16,19 @@ export default function CommunityPostCard({ post }) {
   const [replyContent, setReplyContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const getStorageKey = () => `communityReplies_${post.id}`;
+
   const loadReplies = async () => {
     try {
-      const data = await base44.entities.CommunityReply.filter(
-        { post_id: post.id },
-        '-created_date',
-        50
-      );
-      setReplies(data);
+      const raw = JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
+      const parsed = raw.map((r) => ({
+        ...r,
+        created_date: new Date(r.created_date),
+      }));
+      setReplies(parsed.sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
     } catch (err) {
       console.error(err);
+      setReplies([]);
     }
   };
 
@@ -37,13 +39,21 @@ export default function CommunityPostCard({ post }) {
   const handleReply = async (e) => {
     e.preventDefault();
     if (!replyName.trim() || !replyContent.trim()) return;
+
     setSubmitting(true);
     try {
-      await base44.entities.CommunityReply.create({
+      const newReply = {
+        id: Date.now(),
         post_id: post.id,
         author_name: replyName.trim(),
         content: replyContent.trim(),
-      });
+        created_date: new Date(),
+      };
+
+      const existing = JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
+      localStorage.setItem(getStorageKey(), JSON.stringify([...existing, newReply]));
+
+      setReplyName('');
       setReplyContent('');
       loadReplies();
     } catch (err) {
