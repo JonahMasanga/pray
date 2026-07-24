@@ -44,15 +44,26 @@ function docToObject(snapshot) {
 
  export async function addPrayerRequest(data) {
   const now = Timestamp.now();
-  const docRef = await addDoc(collection(db, PRAYER_REQUESTS), {
-    ...data,
-    is_public: typeof data?.is_public === 'boolean' ? data.is_public : true,
+
+  // Remove undefined values (Firestore rejects them)
+  const cleaned = Object.fromEntries(
+    Object.entries(data || {}).filter(([, v]) => v !== undefined)
+  );
+
+  const payload = {
+    ...cleaned,
+    title: cleaned.title ?? '',
+    description: cleaned.description ?? '',
+    category: cleaned.category ?? 'general',
+    requester_name: cleaned.requester_name ?? 'Anonymous',
+    is_public: typeof cleaned.is_public === 'boolean' ? cleaned.is_public : true,
     prayer_count: 0,
     is_answered: false,
-    // Client timestamp for immediate ordering visibility
     created_date_client: now,
     created_date: serverTimestamp(),
-  });
+  };
+
+  const docRef = await addDoc(collection(db, PRAYER_REQUESTS), payload);
   return docRef.id;
 }
 
