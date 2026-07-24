@@ -43,85 +43,78 @@ function docToObject(snapshot) {
 
 
  export async function addPrayerRequest(data) {
-+  const now = Timestamp.now();
-   const docRef = await addDoc(collection(db, PRAYER_REQUESTS), {
-     ...data,
-+    is_public: typeof data?.is_public === 'boolean' ? data.is_public : true,
-     prayer_count: 0,
-     is_answered: false,
-+    // Client timestamp for immediate ordering visibility
-+    created_date_client: now,
-     created_date: serverTimestamp(),
-   });
-   return docRef.id;
- }
-+
-+const PRESET_PRAYER_REQUESTS = [
-+  {
-+    id: 'preset-1',
-+    title: 'Peace in my family',
-+    description: 'Please pray for unity, forgiveness, and peace in our home.',
-+    category: 'family',
-+    is_public: true,
-+    is_answered: false,
-+    requester_name: 'Community',
-+    prayer_count: 12,
-+    created_date: new Date('2026-01-10T09:00:00Z'),
-+  },
-+  {
-+    id: 'preset-2',
-+    title: 'Healing and strength',
-+    description: 'Pray for complete healing and daily strength during recovery.',
-+    category: 'health',
-+    is_public: true,
-+    is_answered: false,
-+    requester_name: 'Community',
-+    prayer_count: 18,
-+    created_date: new Date('2026-02-02T12:00:00Z'),
-+  },
-+  {
-+    id: 'preset-3',
-+    title: 'Wisdom for work decisions',
-+    description: 'Pray for discernment and favor in career direction.',
-+    category: 'career',
-+    is_public: true,
-+    is_answered: false,
-+    requester_name: 'Community',
-+    prayer_count: 9,
-+    created_date: new Date('2026-03-14T08:30:00Z'),
-+  },
-+];
-@@
- export async function getPrayerRequests(max = 50) {
--  const q = query(
--    collection(db, PRAYER_REQUESTS),
--    orderBy('created_date', 'desc'),
--    limit(max)
--  );
--  const snapshot = await getDocs(q);
--  return snapshot.docs.map(docToObject);
-+  try {
-+    // Prefer server timestamp ordering
-+    const q = query(
-+      collection(db, PRAYER_REQUESTS),
-+      orderBy('created_date', 'desc'),
-+      limit(max)
-+    );
-+    const snapshot = await getDocs(q);
-+    const docs = snapshot.docs.map(docToObject);
-+    return docs.length ? docs : PRESET_PRAYER_REQUESTS.slice(0, max);
-+  } catch {
-+    // Fallback for environments where created_date ordering/index isn't ready
-+    const q2 = query(
-+      collection(db, PRAYER_REQUESTS),
-+      orderBy('created_date_client', 'desc'),
-+      limit(max)
-+    );
-+    const snapshot2 = await getDocs(q2);
-+    const docs2 = snapshot2.docs.map(docToObject);
-+    return docs2.length ? docs2 : PRESET_PRAYER_REQUESTS.slice(0, max);
-+  }
- }
+  const now = Timestamp.now();
+  const docRef = await addDoc(collection(db, PRAYER_REQUESTS), {
+    ...data,
+    is_public: typeof data?.is_public === 'boolean' ? data.is_public : true,
+    prayer_count: 0,
+    is_answered: false,
+    // Client timestamp for immediate ordering visibility
+    created_date_client: now,
+    created_date: serverTimestamp(),
+  });
+  return docRef.id;
+}
+
+const PRESET_PRAYER_REQUESTS = [
+  {
+    id: 'preset-1',
+    title: 'Peace in my family',
+    description: 'Please pray for unity, forgiveness, and peace in our home.',
+    category: 'family',
+    is_public: true,
+    is_answered: false,
+    requester_name: 'Community',
+    prayer_count: 12,
+    created_date: new Date('2026-01-10T09:00:00Z'),
+  },
+  {
+    id: 'preset-2',
+    title: 'Healing and strength',
+    description: 'Pray for complete healing and daily strength during recovery.',
+    category: 'health',
+    is_public: true,
+    is_answered: false,
+    requester_name: 'Community',
+    prayer_count: 18,
+    created_date: new Date('2026-02-02T12:00:00Z'),
+  },
+  {
+    id: 'preset-3',
+    title: 'Wisdom for work decisions',
+    description: 'Pray for discernment and favor in career direction.',
+    category: 'career',
+    is_public: true,
+    is_answered: false,
+    requester_name: 'Community',
+    prayer_count: 9,
+    created_date: new Date('2026-03-14T08:30:00Z'),
+  },
+];
+
+export async function getPrayerRequests(max = 50) {
+  try {
+    // Prefer server timestamp ordering
+    const q = query(
+      collection(db, PRAYER_REQUESTS),
+      orderBy('created_date', 'desc'),
+      limit(max)
+    );
+    const snapshot = await getDocs(q);
+    const docs = snapshot.docs.map(docToObject);
+    return docs.length ? docs : PRESET_PRAYER_REQUESTS.slice(0, max);
+  } catch {
+    // Fallback for environments where created_date ordering/index isn't ready
+    const q2 = query(
+      collection(db, PRAYER_REQUESTS),
+      orderBy('created_date_client', 'desc'),
+      limit(max)
+    );
+    const snapshot2 = await getDocs(q2);
+    const docs2 = snapshot2.docs.map(docToObject);
+    return docs2.length ? docs2 : PRESET_PRAYER_REQUESTS.slice(0, max);
+  }
+}
 // ─── Testimonies ─────────────────────────────────────────────────────────────
 
 const TESTIMONIES = 'testimonies';
