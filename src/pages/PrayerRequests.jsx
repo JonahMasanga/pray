@@ -78,6 +78,20 @@ const mockRequests = [
   },
 ];
 
+function mergeRequestsWithFallback(firestoreRequests, fallbackRequests) {
+  const byId = new Map();
+  fallbackRequests.forEach((request) => {
+    byId.set(String(request.id), { ...request, isFirestoreBacked: false });
+  });
+  firestoreRequests.forEach((request) => {
+    byId.set(String(request.id), { ...request, isFirestoreBacked: true });
+  });
+
+  return Array.from(byId.values()).sort(
+    (a, b) => new Date(b.created_date) - new Date(a.created_date)
+  );
+}
+
 export default function PrayerRequests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,17 +105,10 @@ export default function PrayerRequests() {
   const loadRequests = async () => {
     try {
       const firestoreRequests = await getPrayerRequests();
-      const allRequests = [...firestoreRequests, ...mockRequests].sort(
-        (a, b) => new Date(b.created_date) - new Date(a.created_date)
-      );
-
-      setRequests(allRequests);
+      setRequests(mergeRequestsWithFallback(firestoreRequests, mockRequests));
     } catch (err) {
       console.error('Failed to load prayer requests:', err);
-      const fallbackRequests = [...mockRequests].sort(
-        (a, b) => new Date(b.created_date) - new Date(a.created_date)
-      );
-      setRequests(fallbackRequests);
+      setRequests(mergeRequestsWithFallback([], mockRequests));
     }
     setLoading(false);
   };

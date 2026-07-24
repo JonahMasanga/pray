@@ -34,7 +34,7 @@ export default function PrayerRequestCard({ request }) {
       setPrayed(true);
       localStorage.setItem(`prayed_${request.id}`, 'true');
 
-      if (typeof request.id === 'string') {
+      if (request.isFirestoreBacked) {
         await incrementPrayerCount(request.id);
       }
     } catch (err) {

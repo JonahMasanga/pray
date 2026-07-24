@@ -82,6 +82,20 @@ const mockDevotion = {
   message: 'When life feels overwhelming, remember that prayer is your direct line to God. He invites us to share every concern, every fear, every hope with Him. In bringing our petitions with thanksgiving, we acknowledge His faithfulness and open our hearts to His peace.',
 };
 
+function mergeRequestsWithFallback(firestoreRequests, fallbackRequests) {
+  const byId = new Map();
+  fallbackRequests.forEach((request) => {
+    byId.set(String(request.id), { ...request, isFirestoreBacked: false });
+  });
+  firestoreRequests.forEach((request) => {
+    byId.set(String(request.id), { ...request, isFirestoreBacked: true });
+  });
+
+  return Array.from(byId.values()).sort(
+    (a, b) => new Date(b.created_date) - new Date(a.created_date)
+  );
+}
+
 export default function Home() {
   const [requests, setRequests] = useState([]);
   const [testimonies, setTestimonies] = useState([]);
@@ -96,15 +110,13 @@ export default function Home() {
           getTestimonies(),
         ]);
 
-        const allRequests = [...firestoreRequests, ...mockRequests].sort(
-          (a, b) => new Date(b.created_date) - new Date(a.created_date)
-        );
+        const allRequests = mergeRequestsWithFallback(firestoreRequests, mockRequests);
 
         setRequests(allRequests.slice(0, 4));
         setTestimonies([...firestoreTestimonies, ...mockTestimonies].slice(0, 3));
       } catch (err) {
         console.error('Failed to load home data:', err);
-        setRequests(mockRequests.slice(0, 4));
+        setRequests(mergeRequestsWithFallback([], mockRequests).slice(0, 4));
         setTestimonies(mockTestimonies.slice(0, 3));
       }
 
