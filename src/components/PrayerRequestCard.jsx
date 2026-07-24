@@ -28,18 +28,23 @@ export default function PrayerRequestCard({ request }) {
     try {
       const newCount = count + 1;
 
-      // Update local state immediately
+      // Update local UI state immediately
       setCount(newCount);
       setPrayed(true);
       localStorage.setItem(`prayed_${request.id}`, 'true');
 
-      // Persist to localStorage requests collection
+      // Upsert into localStorage so mock items also persist after refresh
       const existingRequests = JSON.parse(localStorage.getItem('prayerRequests') || '[]');
-      const updatedRequests = existingRequests.map((r) =>
-        String(r.id) === String(request.id)
-          ? { ...r, prayer_count: newCount }
-          : r
-      );
+      const exists = existingRequests.some((r) => Number(r.id) === Number(request.id));
+
+      const updatedRequests = exists
+        ? existingRequests.map((r) =>
+            Number(r.id) === Number(request.id)
+              ? { ...r, prayer_count: newCount }
+              : r
+          )
+        : [{ ...request, prayer_count: newCount }, ...existingRequests];
+
       localStorage.setItem('prayerRequests', JSON.stringify(updatedRequests));
     } catch (err) {
       console.error(err);
