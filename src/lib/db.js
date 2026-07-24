@@ -16,7 +16,7 @@ import {
   serverTimestamp,
   increment,
   limit,
-  +  Timestamp,
+  Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
