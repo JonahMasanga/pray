@@ -14,7 +14,7 @@ export function loadPayPalSdk() {
       paypalPromise = null;
       reject(new Error('Failed to load PayPal SDK'));
     };
-    document.body.appendChild(script);
+    document.head.appendChild(script);
   });
 
   return paypalPromise;
