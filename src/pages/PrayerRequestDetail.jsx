@@ -40,14 +40,21 @@ export default function PrayerRequestDetail() {
   }, [id]);
 
   const handlePray = async () => {
-    if (prayed || praying || !request || !request.id) return;
+    const requestId = request?.id;
+    if (
+      prayed
+      || praying
+      || !request
+      || typeof requestId !== 'string'
+      || requestId.trim() === ''
+    ) return;
     setPraying(true);
     const previousCount = request.prayer_count || 0;
     const previousPrayed = prayed;
     try {
       const newCount = previousCount + 1;
       setRequest({ ...request, prayer_count: newCount });
-      await incrementPrayerCount(request.id);
+      await incrementPrayerCount(requestId);
       localStorage.setItem(`prayed_${id}`, 'true');
       setPrayed(true);
     } catch (err) {
