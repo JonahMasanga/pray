@@ -16,8 +16,8 @@ import {
   query,
   serverTimestamp,
   updateDoc,
+  where, // <-- add this
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 
 const PRAYER_REQUESTS = 'prayer_requests';
 
@@ -145,13 +145,18 @@ export async function getPrayerRequestById(id) {
 }
 
 export async function incrementPrayerCount(id) {
-  if (!id || id.startsWith('preset-')) return;
-  try {
-    const ref = doc(db, PRAYER_REQUESTS, id);
-    await updateDoc(ref, { prayer_count: increment(1) });
-  } catch (err) {
-    console.warn('incrementPrayerCount failed:', err);
+  if (!id || typeof id !== 'string') {
+    throw new Error('Invalid prayer request id');
   }
+
+  // Preset items are fallback-only, not stored in Firestore
+  if (id.startsWith('preset-')) {
+    throw new Error('Cannot persist prayer_count for preset request');
+  }
+
+  const ref = doc(db, PRAYER_REQUESTS, id);
+  await updateDoc(ref, { prayer_count: increment(1) });
+  return true;
 }
 
 // ─── Testimonies ─────────────────────────────────────────────────────────────
