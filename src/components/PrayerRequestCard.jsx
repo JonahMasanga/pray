@@ -26,8 +26,9 @@ export default function PrayerRequestCard({ request }) {
     if (prayed || loading || !request?.id) return;
 
     setLoading(true);
+    const previousCount = count;
     try {
-      const newCount = count + 1;
+      const newCount = previousCount + 1;
 
       // Update local UI state immediately
       setCount(newCount);
@@ -36,7 +37,7 @@ export default function PrayerRequestCard({ request }) {
       localStorage.setItem(`prayed_${request.id}`, 'true');
     } catch (err) {
       console.error(err);
-      setCount((prev) => Math.max(prev - 1, 0));
+      setCount(previousCount);
       setPrayed(false);
     }
     setLoading(false);

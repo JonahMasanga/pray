@@ -42,8 +42,9 @@ export default function PrayerRequestDetail() {
   const handlePray = async () => {
     if (prayed || praying || !request || request.id !== id) return;
     setPraying(true);
+    const previousCount = request.prayer_count || 0;
     try {
-      const newCount = (request.prayer_count || 0) + 1;
+      const newCount = previousCount + 1;
       setRequest({ ...request, prayer_count: newCount });
       await incrementPrayerCount(request.id);
       localStorage.setItem(`prayed_${id}`, 'true');
@@ -52,7 +53,7 @@ export default function PrayerRequestDetail() {
       console.error('Failed to update prayer count:', err);
       setRequest((prev) => (
         prev
-          ? { ...prev, prayer_count: Math.max((prev.prayer_count || 1) - 1, 0) }
+          ? { ...prev, prayer_count: previousCount }
           : prev
       ));
     }
