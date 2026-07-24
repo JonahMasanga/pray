@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Heart, Globe, Lock, Check } from 'lucide-react';
 import CommentSection from '@/components/CommentSection';
 import moment from 'moment';
+import { getPrayerRequestById, incrementPrayerCount } from '@/lib/db';
 
 const categoryLabels = {
   health: 'Health',
@@ -72,27 +73,25 @@ export default function PrayerRequestDetail() {
   const [praying, setPraying] = useState(false);
 
   useEffect(() => {
-    // Simulate API delay
-    const timer = setTimeout(() => {
-      const numId = parseInt(id, 10);
+    const loadRequest = async () => {
+      try {
+        // Try Firestore first; fall back to mock data for seed records.
+        const firestoreRequest = await getPrayerRequestById(id);
 
-      const storedRequests = JSON.parse(localStorage.getItem('prayerRequests') || '[]');
-      const mockRequest = mockRequests.find((r) => r.id === numId);
-      const storedRequest = storedRequests.find((r) => Number(r.id) === numId);
-
-      // Merge by id with stored taking precedence, so updated prayer_count survives refresh
-      const merged = storedRequest
-        ? {
-            ...(mockRequest || {}),
-            ...storedRequest,
-            created_date: new Date(storedRequest.created_date || mockRequest?.created_date || new Date()),
-          }
-        : (mockRequest ? { ...mockRequest } : null);
-
-      setRequest(merged);
+        if (firestoreRequest) {
+          setRequest(firestoreRequest);
+        } else {
+          const numId = parseInt(id, 10);
+          const mockRequest = mockRequests.find((r) => r.id === numId) || null;
+          setRequest(mockRequest);
+        }
+      } catch (err) {
+        console.error('Failed to load prayer request:', err);
+      }
       setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
+    };
+
+    loadRequest();
   }, [id]);
 
   const handlePray = async () => {
@@ -100,22 +99,14 @@ export default function PrayerRequestDetail() {
     setPraying(true);
     try {
       const newCount = (request.prayer_count || 0) + 1;
-      const updatedRequest = { ...request, prayer_count: newCount };
-      setRequest(updatedRequest);
+      setRequest({ ...request, prayer_count: newCount });
       localStorage.setItem(`prayed_${id}`, 'true');
       setPrayed(true);
 
-      // Persist updated count to localStorage collection
-      const existing = JSON.parse(localStorage.getItem('prayerRequests') || '[]');
-      const exists = existing.some((r) => Number(r.id) === Number(request.id));
-
-      const updated = exists
-        ? existing.map((r) => (Number(r.id) === Number(request.id) ? { ...r, prayer_count: newCount } : r))
-        : [{ ...updatedRequest }, ...existing];
-
-      localStorage.setItem('prayerRequests', JSON.stringify(updated));
+      // Persist updated prayer count to Firestore (only for Firestore-backed records).
+      await incrementPrayerCount(id);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to update prayer count:', err);
     }
     setPraying(false);
   };

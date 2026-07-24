@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Sparkles, Loader2, X } from 'lucide-react';
 import TestimonyCard from '@/components/TestimonyCard';
+import { getTestimonies, addTestimony } from '@/lib/db';
 
 // Mock data
 const mockTestimonies = [
@@ -55,20 +56,17 @@ export default function Testimonies() {
     loadTestimonies();
   }, []);
 
-  const loadTestimonies = () => {
-    // Simulate API delay
-    setTimeout(() => {
-      // Get testimonies from localStorage + mock data
-      const storedTestimonies = JSON.parse(localStorage.getItem('testimonies') || '[]');
-      // Parse dates that were stringified
-      const parsedStored = storedTestimonies.map(t => ({
-        ...t,
-        created_date: new Date(t.created_date)
-      }));
-      const allTestimonies = [...parsedStored, ...mockTestimonies];
+  const loadTestimonies = async () => {
+    try {
+      const firestoreTestimonies = await getTestimonies();
+      // Merge Firestore results with mock data; Firestore records appear first.
+      const allTestimonies = [...firestoreTestimonies, ...mockTestimonies];
       setTestimonies(allTestimonies);
-      setLoading(false);
-    }, 500);
+    } catch (err) {
+      console.error('Failed to load testimonies:', err);
+      setTestimonies([...mockTestimonies]);
+    }
+    setLoading(false);
   };
 
   const handleSubmit = async (e) => {
@@ -81,20 +79,11 @@ export default function Testimonies() {
     setSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const newTestimony = {
-        id: Math.floor(Math.random() * 10000),
+      await addTestimony({
         title: title.trim(),
         description: description.trim(),
         verse_reference: verse.trim(),
-        created_date: new Date(),
-      };
-      
-      // Store in localStorage
-      const existingTestimonies = JSON.parse(localStorage.getItem('testimonies') || '[]');
-      localStorage.setItem('testimonies', JSON.stringify([newTestimony, ...existingTestimonies]));
+      });
       
       // Reset form
       setTitle('');

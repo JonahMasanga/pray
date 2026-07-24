@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, X, MessageCircle } from 'lucide-react';
 import CommunityPostForm from '@/components/CommunityPostForm';
 import CommunityPostCard from '@/components/CommunityPostCard';
+import { getCommunityPosts } from '@/lib/db';
 
 // Mock data
 const mockPosts = [
@@ -43,20 +44,17 @@ export default function Community() {
     loadPosts();
   }, []);
 
-  const loadPosts = () => {
-    // Simulate API delay
-    setTimeout(() => {
-      // Get posts from localStorage if available, otherwise use mock data
-      const storedPosts = JSON.parse(localStorage.getItem('communityPosts') || '[]');
-      // Parse dates that were stringified
-      const parsedStored = storedPosts.map(p => ({
-        ...p,
-        created_date: new Date(p.created_date)
-      }));
-      const allPosts = [...parsedStored, ...mockPosts];
+  const loadPosts = async () => {
+    try {
+      const firestorePosts = await getCommunityPosts();
+      // Show Firestore posts first, then seed mock data below them.
+      const allPosts = [...firestorePosts, ...mockPosts];
       setPosts(allPosts);
-      setLoading(false);
-    }, 500);
+    } catch (err) {
+      console.error('Failed to load community posts:', err);
+      setPosts([...mockPosts]);
+    }
+    setLoading(false);
   };
 
   const handleSubmit = () => {

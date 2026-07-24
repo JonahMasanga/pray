@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Heart, X } from 'lucide-react';
 import PrayerRequestCard from '@/components/PrayerRequestCard';
 import PrayerRequestForm from '@/components/PrayerRequestForm';
+import { getPrayerRequests } from '@/lib/db';
 
 const categories = [
   { value: 'all', label: 'All' },
@@ -87,30 +88,25 @@ export default function PrayerRequests() {
     loadRequests();
   }, []);
 
-  const loadRequests = () => {
-    // Simulate API delay
-    setTimeout(() => {
-      // Get prayers from localStorage
-      const storedRequests = JSON.parse(localStorage.getItem('prayerRequests') || '[]');
+  const loadRequests = async () => {
+    try {
+      const firestoreRequests = await getPrayerRequests();
 
-      // Parse dates that were stringified
-      const parsedStored = storedRequests.map((r) => ({
-        ...r,
-        created_date: new Date(r.created_date),
-      }));
-
-      // Merge mock + stored by id so stored values (e.g. prayer_count) override mock values
+      // Merge Firestore results with mock data so seed content is always visible.
+      // Firestore records (keyed by Firestore doc ID) override mock records (keyed by numeric id).
       const mergedMap = new Map();
       mockRequests.forEach((r) => mergedMap.set(String(r.id), r));
-      parsedStored.forEach((r) => mergedMap.set(String(r.id), r));
+      firestoreRequests.forEach((r) => mergedMap.set(String(r.id), r));
 
       const allRequests = Array.from(mergedMap.values()).sort(
         (a, b) => new Date(b.created_date) - new Date(a.created_date)
       );
 
       setRequests(allRequests);
-      setLoading(false);
-    }, 500);
+    } catch (err) {
+      console.error('Failed to load prayer requests:', err);
+    }
+    setLoading(false);
   };
 
   const handleSubmit = () => {

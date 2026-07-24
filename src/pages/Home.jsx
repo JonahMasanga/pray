@@ -4,6 +4,7 @@ import { Heart, Bot, Gift, Bell, ArrowRight } from 'lucide-react';
 import PrayerRequestCard from '@/components/PrayerRequestCard';
 import TestimonyCard from '@/components/TestimonyCard';
 import DevotionCard from '@/components/DevotionCard';
+import { getPrayerRequests, getTestimonies } from '@/lib/db';
 
 // Mock data
 const mockRequests = [
@@ -88,14 +89,34 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API delay
-    const timer = setTimeout(() => {
-      setRequests(mockRequests.slice(0, 4));
-      setTestimonies(mockTestimonies.slice(0, 3));
+    const load = async () => {
+      try {
+        const [firestoreRequests, firestoreTestimonies] = await Promise.all([
+          getPrayerRequests(),
+          getTestimonies(),
+        ]);
+
+        // Merge Firestore results with mock seed data; Firestore records take precedence.
+        const reqMap = new Map();
+        mockRequests.forEach((r) => reqMap.set(String(r.id), r));
+        firestoreRequests.forEach((r) => reqMap.set(String(r.id), r));
+        const allRequests = Array.from(reqMap.values()).sort(
+          (a, b) => new Date(b.created_date) - new Date(a.created_date)
+        );
+
+        setRequests(allRequests.slice(0, 4));
+        setTestimonies([...firestoreTestimonies, ...mockTestimonies].slice(0, 3));
+      } catch (err) {
+        console.error('Failed to load home data:', err);
+        setRequests(mockRequests.slice(0, 4));
+        setTestimonies(mockTestimonies.slice(0, 3));
+      }
+
       setDevotion(mockDevotion);
       setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
+    };
+
+    load();
   }, []);
 
   const enableReminders = async () => {

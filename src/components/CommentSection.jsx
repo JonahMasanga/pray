@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Send, Heart, MessageCircle, Loader2 } from 'lucide-react';
 import moment from 'moment';
+import { getComments, addComment } from '@/lib/db';
 
 export default function CommentSection({ prayerRequestId }) {
   const [comments, setComments] = useState([]);
@@ -13,18 +14,12 @@ export default function CommentSection({ prayerRequestId }) {
     loadComments();
   }, [prayerRequestId]);
 
-  const getStorageKey = () => `prayerComments_${prayerRequestId}`;
-
   const loadComments = async () => {
     try {
-      const raw = JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
-      const parsed = raw.map((c) => ({
-        ...c,
-        created_date: new Date(c.created_date),
-      }));
-      setComments(parsed.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+      const data = await getComments(prayerRequestId);
+      setComments(data);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load comments:', err);
       setComments([]);
     }
     setLoading(false);
@@ -36,16 +31,11 @@ export default function CommentSection({ prayerRequestId }) {
 
     setSubmitting(true);
     try {
-      const newComment = {
-        id: Date.now(),
+      await addComment({
         prayer_request_id: prayerRequestId,
         content: content.trim(),
         type,
-        created_date: new Date(),
-      };
-
-      const existing = JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
-      localStorage.setItem(getStorageKey(), JSON.stringify([newComment, ...existing]));
+      });
 
       setContent('');
       setType('comment');
