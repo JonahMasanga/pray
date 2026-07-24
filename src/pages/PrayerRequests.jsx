@@ -29,17 +29,15 @@ export default function PrayerRequests() {
     setLoading(true);
     setError('');
     try {
-      const firestoreRequests = await getPrayerRequests();
-      const sortedRequests = [...firestoreRequests].sort(
-        (a, b) => new Date(b.created_date) - new Date(a.created_date)
-      );
-      setRequests(sortedRequests);
+      const firestoreRequests = await getPrayerRequests(50);
+      setRequests(firestoreRequests);
     } catch (err) {
       console.error('Failed to load prayer requests:', err);
       setRequests([]);
       setError('Unable to load prayer requests right now. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSubmit = () => {

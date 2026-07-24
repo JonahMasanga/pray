@@ -15,6 +15,7 @@ import {
   orderBy,
   serverTimestamp,
   increment,
+  limit,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -42,13 +43,15 @@ function docToObject(snapshot) {
 const PRAYER_REQUESTS = 'prayerRequests';
 
 /**
- * Fetch all prayer requests ordered by creation date (newest first).
+ * Fetch prayer requests ordered by creation date (newest first).
+ * @param {number} max
  * @returns {Promise<Array>}
  */
-export async function getPrayerRequests() {
+export async function getPrayerRequests(max = 50) {
   const q = query(
     collection(db, PRAYER_REQUESTS),
-    orderBy('created_date', 'desc')
+    orderBy('created_date', 'desc'),
+    limit(max)
   );
   const snapshot = await getDocs(q);
   return snapshot.docs.map(docToObject);
@@ -151,7 +154,7 @@ export async function addCommunityPost(data) {
   return docRef.id;
 }
 
-// ─── Comments ─────────────────────────────────────────────────────────────────
+// ─── Comments ────────────────────────────────────────────────────────────────
 
 const COMMENTS = 'comments';
 

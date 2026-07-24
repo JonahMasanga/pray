@@ -19,7 +19,7 @@ export default function PrayerRequestForm({ onSubmit }) {
     }
     setError('');
     setSubmitting(true);
-    
+
     try {
       await addPrayerRequest({
         requester_name: requesterName.trim(),
@@ -28,21 +28,29 @@ export default function PrayerRequestForm({ onSubmit }) {
         category,
         is_public: isPublic,
       });
-      
+
       // Reset form
       setRequesterName('');
       setTitle('');
       setDescription('');
       setCategory('other');
       setIsPublic(true);
-      
+
       // Notify parent component
       if (onSubmit) onSubmit();
     } catch (err) {
       console.error(err);
-      setError('Failed to submit prayer request. Please try again.');
+      const code = err?.code || '';
+      if (code.includes('permission-denied')) {
+        setError('Posting is blocked by Firestore security rules. Please contact support.');
+      } else if (code.includes('failed-precondition')) {
+        setError('A required database index is still building. Please try again in a minute.');
+      } else {
+        setError('Failed to submit prayer request. Please try again.');
+      }
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   return (
