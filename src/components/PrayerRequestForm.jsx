@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Globe, Lock, Loader2, Send } from 'lucide-react';
+import { addPrayerRequest } from '@/lib/db';
 
 export default function PrayerRequestForm({ onSubmit }) {
   const [requesterName, setRequesterName] = useState('');
@@ -20,25 +21,13 @@ export default function PrayerRequestForm({ onSubmit }) {
     setSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Create new prayer request object
-      const newRequest = {
-        id: Math.floor(Math.random() * 10000),
+      await addPrayerRequest({
         requester_name: requesterName.trim(),
         title: title.trim(),
         description: description.trim(),
         category,
         is_public: isPublic,
-        prayer_count: 0,
-        is_answered: false,
-        created_date: new Date(),
-      };
-      
-      // Store in localStorage
-      const existingRequests = JSON.parse(localStorage.getItem('prayerRequests') || '[]');
-      localStorage.setItem('prayerRequests', JSON.stringify([newRequest, ...existingRequests]));
+      });
       
       // Reset form
       setRequesterName('');

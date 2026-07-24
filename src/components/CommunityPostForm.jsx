@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Loader2, Send } from 'lucide-react';
+import { addCommunityPost } from '@/lib/db';
 
 const postTypes = [
   { value: 'general', label: 'General' },
@@ -25,23 +26,11 @@ export default function CommunityPostForm({ onSubmit }) {
     setSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Create new community post object
-      const newPost = {
-        id: Math.floor(Math.random() * 10000),
+      await addCommunityPost({
         author_name: authorName.trim(),
         content: content.trim(),
         post_type: postType,
-        created_date: new Date(),
-        likes: 0,
-        replies: 0,
-      };
-      
-      // Store in localStorage
-      const existingPosts = JSON.parse(localStorage.getItem('communityPosts') || '[]');
-      localStorage.setItem('communityPosts', JSON.stringify([newPost, ...existingPosts]));
+      });
       
       // Reset form
       setAuthorName('');
