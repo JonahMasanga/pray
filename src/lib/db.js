@@ -56,6 +56,14 @@ function docToObject(snapshot) {
   return docRef.id;
 }
 
+export async function incrementPrayerCount(id) {
+  if (!id) return;
+  const ref = doc(db, PRAYER_REQUESTS, id);
+  await updateDoc(ref, {
+    prayer_count: increment(1),
+  });
+}
+
 const PRESET_PRAYER_REQUESTS = [
   {
     id: 'preset-1',
