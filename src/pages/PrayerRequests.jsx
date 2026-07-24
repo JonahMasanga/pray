@@ -91,20 +91,17 @@ export default function PrayerRequests() {
   const loadRequests = async () => {
     try {
       const firestoreRequests = await getPrayerRequests();
-
-      // Merge Firestore results with mock data so seed content is always visible.
-      // Firestore records (keyed by Firestore doc ID) override mock records (keyed by numeric id).
-      const mergedMap = new Map();
-      mockRequests.forEach((r) => mergedMap.set(String(r.id), r));
-      firestoreRequests.forEach((r) => mergedMap.set(String(r.id), r));
-
-      const allRequests = Array.from(mergedMap.values()).sort(
+      const allRequests = [...firestoreRequests, ...mockRequests].sort(
         (a, b) => new Date(b.created_date) - new Date(a.created_date)
       );
 
       setRequests(allRequests);
     } catch (err) {
       console.error('Failed to load prayer requests:', err);
+      const fallbackRequests = [...mockRequests].sort(
+        (a, b) => new Date(b.created_date) - new Date(a.created_date)
+      );
+      setRequests(fallbackRequests);
     }
     setLoading(false);
   };

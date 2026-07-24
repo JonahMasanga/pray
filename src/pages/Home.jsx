@@ -96,11 +96,7 @@ export default function Home() {
           getTestimonies(),
         ]);
 
-        // Merge Firestore results with mock seed data; Firestore records take precedence.
-        const reqMap = new Map();
-        mockRequests.forEach((r) => reqMap.set(String(r.id), r));
-        firestoreRequests.forEach((r) => reqMap.set(String(r.id), r));
-        const allRequests = Array.from(reqMap.values()).sort(
+        const allRequests = [...firestoreRequests, ...mockRequests].sort(
           (a, b) => new Date(b.created_date) - new Date(a.created_date)
         );
 

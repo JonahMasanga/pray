@@ -15,14 +15,16 @@ export default function CommentSection({ prayerRequestId }) {
   }, [prayerRequestId]);
 
   const loadComments = async () => {
+    setLoading(true);
     try {
       const data = await getComments(prayerRequestId);
       setComments(data);
     } catch (err) {
       console.error('Failed to load comments:', err);
       setComments([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSubmit = async (e) => {
@@ -39,7 +41,7 @@ export default function CommentSection({ prayerRequestId }) {
 
       setContent('');
       setType('comment');
-      loadComments();
+      await loadComments();
     } catch (err) {
       console.error(err);
     }

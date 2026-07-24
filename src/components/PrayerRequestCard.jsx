@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Lock, Globe, Check } from 'lucide-react';
+import { incrementPrayerCount } from '@/lib/db';
 
 const categoryConfig = {
   health: { label: 'Health', cls: 'bg-red-50 text-red-600' },
@@ -33,19 +34,9 @@ export default function PrayerRequestCard({ request }) {
       setPrayed(true);
       localStorage.setItem(`prayed_${request.id}`, 'true');
 
-      // Upsert into localStorage so mock items also persist after refresh
-      const existingRequests = JSON.parse(localStorage.getItem('prayerRequests') || '[]');
-      const exists = existingRequests.some((r) => Number(r.id) === Number(request.id));
-
-      const updatedRequests = exists
-        ? existingRequests.map((r) =>
-            Number(r.id) === Number(request.id)
-              ? { ...r, prayer_count: newCount }
-              : r
-          )
-        : [{ ...request, prayer_count: newCount }, ...existingRequests];
-
-      localStorage.setItem('prayerRequests', JSON.stringify(updatedRequests));
+      if (typeof request.id === 'string') {
+        await incrementPrayerCount(request.id);
+      }
     } catch (err) {
       console.error(err);
     }
