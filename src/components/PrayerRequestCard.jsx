@@ -23,7 +23,13 @@ export default function PrayerRequestCard({ request }) {
   const handlePray = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (prayed || loading || !request?.id) return;
+    const requestId = request?.id;
+    if (
+      prayed
+      || loading
+      || typeof requestId !== 'string'
+      || requestId.trim() === ''
+    ) return;
 
     setLoading(true);
     const previousCount = count;
@@ -34,14 +40,14 @@ export default function PrayerRequestCard({ request }) {
       // Update local UI state immediately
       setCount(newCount);
       setPrayed(true);
-      localStorage.setItem(`prayed_${request.id}`, 'true');
-      await incrementPrayerCount(request.id);
+      localStorage.setItem(`prayed_${requestId}`, 'true');
+      await incrementPrayerCount(requestId);
     } catch (err) {
       console.error(err);
       setCount(previousCount);
       setPrayed(previousPrayed);
       if (!previousPrayed) {
-        localStorage.removeItem(`prayed_${request.id}`);
+        localStorage.removeItem(`prayed_${requestId}`);
       }
     }
     setLoading(false);
