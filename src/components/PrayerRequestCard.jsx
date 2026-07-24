@@ -34,12 +34,15 @@ export default function PrayerRequestCard({ request }) {
       // Update local UI state immediately
       setCount(newCount);
       setPrayed(true);
-      await incrementPrayerCount(request.id);
       localStorage.setItem(`prayed_${request.id}`, 'true');
+      await incrementPrayerCount(request.id);
     } catch (err) {
       console.error(err);
       setCount(previousCount);
       setPrayed(previousPrayed);
+      if (!previousPrayed) {
+        localStorage.removeItem(`prayed_${request.id}`);
+      }
     }
     setLoading(false);
   };

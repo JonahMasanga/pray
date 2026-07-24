@@ -52,11 +52,7 @@ export default function PrayerRequestDetail() {
       setPrayed(true);
     } catch (err) {
       console.error('Failed to update prayer count:', err);
-      setRequest((prev) => (
-        prev
-          ? { ...prev, prayer_count: previousCount }
-          : prev
-      ));
+      setRequest({ ...request, prayer_count: previousCount });
       setPrayed(previousPrayed);
     }
     setPraying(false);
