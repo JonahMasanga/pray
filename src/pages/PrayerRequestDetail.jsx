@@ -40,9 +40,10 @@ export default function PrayerRequestDetail() {
   }, [id]);
 
   const handlePray = async () => {
-    if (prayed || praying || !request || request.id !== id) return;
+    if (prayed || praying || !request || !request.id) return;
     setPraying(true);
     const previousCount = request.prayer_count || 0;
+    const previousPrayed = prayed;
     try {
       const newCount = previousCount + 1;
       setRequest({ ...request, prayer_count: newCount });
@@ -56,6 +57,7 @@ export default function PrayerRequestDetail() {
           ? { ...prev, prayer_count: previousCount }
           : prev
       ));
+      setPrayed(previousPrayed);
     }
     setPraying(false);
   };

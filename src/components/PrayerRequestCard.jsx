@@ -27,6 +27,7 @@ export default function PrayerRequestCard({ request }) {
 
     setLoading(true);
     const previousCount = count;
+    const previousPrayed = prayed;
     try {
       const newCount = previousCount + 1;
 
@@ -38,7 +39,7 @@ export default function PrayerRequestCard({ request }) {
     } catch (err) {
       console.error(err);
       setCount(previousCount);
-      setPrayed(false);
+      setPrayed(previousPrayed);
     }
     setLoading(false);
   };
