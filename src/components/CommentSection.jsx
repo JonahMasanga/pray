@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Send, Heart, MessageCircle, Loader2 } from 'lucide-react';
 import moment from 'moment';
 import { getComments, addComment } from '@/lib/db';
@@ -9,21 +9,30 @@ export default function CommentSection({ prayerRequestId }) {
   const [type, setType] = useState('comment');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const latestLoadIdRef = useRef(0);
 
   useEffect(() => {
     loadComments();
   }, [prayerRequestId]);
 
   const loadComments = async () => {
+    const loadId = latestLoadIdRef.current + 1;
+    latestLoadIdRef.current = loadId;
     setLoading(true);
     try {
       const data = await getComments(prayerRequestId);
-      setComments(data);
+      if (latestLoadIdRef.current === loadId) {
+        setComments(data);
+      }
     } catch (err) {
       console.error('Failed to load comments:', err);
-      setComments([]);
+      if (latestLoadIdRef.current === loadId) {
+        setComments([]);
+      }
     } finally {
-      setLoading(false);
+      if (latestLoadIdRef.current === loadId) {
+        setLoading(false);
+      }
     }
   };
 

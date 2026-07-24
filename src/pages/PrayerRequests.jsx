@@ -3,6 +3,7 @@ import { Plus, Heart, X } from 'lucide-react';
 import PrayerRequestCard from '@/components/PrayerRequestCard';
 import PrayerRequestForm from '@/components/PrayerRequestForm';
 import { getPrayerRequests } from '@/lib/db';
+import { mergeRequestsWithFallback } from '@/lib/requestMerge';
 
 const categories = [
   { value: 'all', label: 'All' },
@@ -77,20 +78,6 @@ const mockRequests = [
     created_date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
   },
 ];
-
-function mergeRequestsWithFallback(firestoreRequests, fallbackRequests) {
-  const byId = new Map();
-  fallbackRequests.forEach((request) => {
-    byId.set(String(request.id), { ...request, isFirestoreBacked: false });
-  });
-  firestoreRequests.forEach((request) => {
-    byId.set(String(request.id), { ...request, isFirestoreBacked: true });
-  });
-
-  return Array.from(byId.values()).sort(
-    (a, b) => new Date(b.created_date) - new Date(a.created_date)
-  );
-}
 
 export default function PrayerRequests() {
   const [requests, setRequests] = useState([]);

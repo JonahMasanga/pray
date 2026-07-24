@@ -5,6 +5,7 @@ import PrayerRequestCard from '@/components/PrayerRequestCard';
 import TestimonyCard from '@/components/TestimonyCard';
 import DevotionCard from '@/components/DevotionCard';
 import { getPrayerRequests, getTestimonies } from '@/lib/db';
+import { mergeRequestsWithFallback } from '@/lib/requestMerge';
 
 // Mock data
 const mockRequests = [
@@ -81,20 +82,6 @@ const mockDevotion = {
   verse_reference: 'Philippians 4:6',
   message: 'When life feels overwhelming, remember that prayer is your direct line to God. He invites us to share every concern, every fear, every hope with Him. In bringing our petitions with thanksgiving, we acknowledge His faithfulness and open our hearts to His peace.',
 };
-
-function mergeRequestsWithFallback(firestoreRequests, fallbackRequests) {
-  const byId = new Map();
-  fallbackRequests.forEach((request) => {
-    byId.set(String(request.id), { ...request, isFirestoreBacked: false });
-  });
-  firestoreRequests.forEach((request) => {
-    byId.set(String(request.id), { ...request, isFirestoreBacked: true });
-  });
-
-  return Array.from(byId.values()).sort(
-    (a, b) => new Date(b.created_date) - new Date(a.created_date)
-  );
-}
 
 export default function Home() {
   const [requests, setRequests] = useState([]);
