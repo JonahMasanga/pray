@@ -40,7 +40,7 @@ function docToObject(snapshot) {
 
 // ─── Prayer Requests ─────────────────────────────────────────────────────────
 
-@@
+
  export async function addPrayerRequest(data) {
 +  const now = Timestamp.now();
    const docRef = await addDoc(collection(db, PRAYER_REQUESTS), {
