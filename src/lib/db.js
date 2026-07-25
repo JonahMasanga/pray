@@ -211,6 +211,35 @@ export async function addCommunityPost(data) {
   });
   return docRef.id;
 }
+const COMMUNITY_POSTS = 'communityPosts';
+
+/**
+ * Fetch all community posts ordered by creation date (newest first).
+ * @returns {Promise<Array>}
+ */
+export async function getCommunityPosts() {
+  const q = query(
+    collection(db, COMMUNITY_POSTS),
+    orderBy('created_date', 'desc')
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(docToObject);
+}
+
+/**
+ * Create a new community post document.
+ * @param {Object} data  Fields: author_name, content, post_type
+ * @returns {Promise<string>} The new document ID
+ */
+export async function addCommunityPost(data) {
+  const docRef = await addDoc(collection(db, COMMUNITY_POSTS), {
+    ...data,
+    likes: 0,
+    replies: 0,
+    created_date: serverTimestamp(),
+  });
+  return docRef.id;
+}
 
 // ─── Comments ────────────────────────────────────────────────────────────────
 
