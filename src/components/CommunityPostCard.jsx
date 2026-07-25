@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle, Send, Loader2 } from 'lucide-react';
 import moment from 'moment';
+import { getCommunityReplies, addCommunityReply } from '@/lib/db'; // <-- add
 
-const typeConfig = {
-  praise: { label: 'Praise', cls: 'bg-amber-50 text-amber-600' },
-  prayer: { label: 'Prayer', cls: 'bg-purple-50 text-purple-600' },
-  question: { label: 'Question', cls: 'bg-blue-50 text-blue-600' },
-  general: { label: 'General', cls: 'bg-stone-100 text-stone-600' },
-};
+// keep typeConfig...
 
 export default function CommunityPostCard({ post }) {
   const [replies, setReplies] = useState([]);
@@ -16,25 +12,19 @@ export default function CommunityPostCard({ post }) {
   const [replyContent, setReplyContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const getStorageKey = () => `communityReplies_${post.id}`;
-
   const loadReplies = async () => {
     try {
-      const raw = JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
-      const parsed = raw.map((r) => ({
-        ...r,
-        created_date: new Date(r.created_date),
-      }));
-      setReplies(parsed.sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
+      const data = await getCommunityReplies(post.id);
+      setReplies(data);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load replies:', err);
       setReplies([]);
     }
   };
 
   useEffect(() => {
     if (showReplies) loadReplies();
-  }, [showReplies]);
+  }, [showReplies, post.id]);
 
   const handleReply = async (e) => {
     e.preventDefault();
@@ -42,27 +32,26 @@ export default function CommunityPostCard({ post }) {
 
     setSubmitting(true);
     try {
-      const newReply = {
-        id: Date.now(),
+      await addCommunityReply({
         post_id: post.id,
         author_name: replyName.trim(),
         content: replyContent.trim(),
-        created_date: new Date(),
-      };
-
-      const existing = JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
-      localStorage.setItem(getStorageKey(), JSON.stringify([...existing, newReply]));
+      });
 
       setReplyName('');
       setReplyContent('');
-      loadReplies();
+      await loadReplies();
     } catch (err) {
-      console.error(err);
+      console.error('Failed to add reply:', err);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   const type = typeConfig[post.post_type] || typeConfig.general;
+
+  // keep render as-is
+}
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
