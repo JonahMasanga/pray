@@ -231,16 +231,27 @@ export async function getCommunityPosts() {
  * @param {Object} data  Fields: author_name, content, post_type
  * @returns {Promise<string>} The new document ID
  */
-export async function addCommunityPost(data) {
-  const docRef = await addDoc(collection(db, COMMUNITY_POSTS), {
-    ...data,
-    likes: 0,
-    replies: 0,
-    created_date: serverTimestamp(),
-  });
-  return docRef.id;
-}
+// src/lib/db.js
 
+export async function addCommunityReply({ post_id, author_name, content }) {
+  if (!post_id || !author_name || !content) {
+    throw new Error("Missing required fields for reply");
+  }
+
+  try {
+    const repliesRef = collection(db, 'community_replies'); // Ensure this matches your Firestore collection name
+    const docRef = await addDoc(repliesRef, {
+      post_id: post_id,
+      author_name: author_name,
+      content: content,
+      created_date: serverTimestamp(), // Firestore handles this
+    });
+    return docRef.id;
+  } catch (err) {
+    console.error("Error adding reply to Firestore:", err);
+    throw err; // This will show up in your CommunityPostCard.jsx error state
+  }
+}
 // ─── Comments ────────────────────────────────────────────────────────────────
 
 const COMMENTS = 'comments';
