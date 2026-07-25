@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle, Send, Loader2 } from 'lucide-react';
 import moment from 'moment';
-import { getCommunityReplies, addCommunityReply } from '@/lib/db'; // <-- add
+import { getCommunityReplies, addCommunityReply } from '@/lib/db';
 
-// keep typeConfig...
+const typeConfig = {
+  praise: { label: 'Praise', cls: 'bg-amber-50 text-amber-600' },
+  prayer: { label: 'Prayer', cls: 'bg-purple-50 text-purple-600' },
+  question: { label: 'Question', cls: 'bg-blue-50 text-blue-600' },
+  general: { label: 'General', cls: 'bg-stone-100 text-stone-600' },
+};
 
 export default function CommunityPostCard({ post }) {
   const [replies, setReplies] = useState([]);
@@ -11,6 +16,7 @@ export default function CommunityPostCard({ post }) {
   const [replyName, setReplyName] = useState('');
   const [replyContent, setReplyContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const loadReplies = async () => {
     try {
@@ -19,6 +25,7 @@ export default function CommunityPostCard({ post }) {
     } catch (err) {
       console.error('Failed to load replies:', err);
       setReplies([]);
+      setError('Could not load replies.');
     }
   };
 
@@ -31,6 +38,7 @@ export default function CommunityPostCard({ post }) {
     if (!replyName.trim() || !replyContent.trim()) return;
 
     setSubmitting(true);
+    setError('');
     try {
       await addCommunityReply({
         post_id: post.id,
@@ -43,15 +51,13 @@ export default function CommunityPostCard({ post }) {
       await loadReplies();
     } catch (err) {
       console.error('Failed to add reply:', err);
+      setError('Failed to post reply. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
   const type = typeConfig[post.post_type] || typeConfig.general;
-
-  // keep render as-is
-
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
@@ -63,12 +69,14 @@ export default function CommunityPostCard({ post }) {
           {moment(post.created_date).fromNow()}
         </span>
       </div>
+
       <div className="flex items-center gap-2.5 mb-3">
         <div className="w-8 h-8 rounded-full bg-[#1A1830] text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
           {post.author_name?.charAt(0).toUpperCase() || '?'}
         </div>
         <span className="font-medium text-stone-700 text-sm">{post.author_name}</span>
       </div>
+
       <p className="text-stone-600 text-sm leading-relaxed whitespace-pre-wrap">{post.content}</p>
 
       <button
@@ -82,6 +90,8 @@ export default function CommunityPostCard({ post }) {
 
       {showReplies && (
         <div className="mt-4 pt-4 border-t border-stone-100 space-y-3">
+          {error && <p className="text-xs text-red-600">{error}</p>}
+
           {replies.map((reply) => (
             <div key={reply.id} className="bg-stone-50 rounded-xl p-3">
               <div className="flex items-center gap-2 mb-1.5">
