@@ -51,7 +51,7 @@ export default function CommunityPostCard({ post }) {
   const type = typeConfig[post.post_type] || typeConfig.general;
 
   // keep render as-is
-}
+
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100">
