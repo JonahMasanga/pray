@@ -3,6 +3,7 @@
  * All CRUD operations for the app's collections are centralised here so that
  * calling code never imports Firestore APIs directly.
  */
+import { db } from '@/lib/firebase';
 import {
   Timestamp,
   addDoc,
