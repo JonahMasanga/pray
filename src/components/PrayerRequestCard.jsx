@@ -13,44 +13,44 @@ const categoryConfig = {
 };
 
 export default function PrayerRequestCard({ request }) {
+  const requestId = request?.id;
+  const isPersistable = typeof requestId === 'string' && requestId.trim() !== '' && !requestId.startsWith('preset-');
+
   const [prayed, setPrayed] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem(`prayed_${request.id}`) === 'true';
+    if (typeof window === 'undefined' || !isPersistable) return false;
+    return localStorage.getItem(`prayed_${requestId}`) === 'true';
   });
   const [count, setCount] = useState(request.prayer_count || 0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handlePray = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const requestId = request?.id;
-    if (
-      prayed
-      || loading
-      || typeof requestId !== 'string'
-      || requestId.trim() === ''
-    ) return;
+
+    if (prayed || loading || !isPersistable) return;
 
     setLoading(true);
+    setError('');
     const previousCount = count;
     const previousPrayed = prayed;
+
     try {
       const newCount = previousCount + 1;
-
-      // Update local UI state immediately
-      setCount(newCount);
+      setCount(newCount); // optimistic
       setPrayed(true);
       localStorage.setItem(`prayed_${requestId}`, 'true');
+
       await incrementPrayerCount(requestId);
     } catch (err) {
-      console.error(err);
+      console.error('incrementPrayerCount failed:', err);
       setCount(previousCount);
       setPrayed(previousPrayed);
-      if (!previousPrayed) {
-        localStorage.removeItem(`prayed_${requestId}`);
-      }
+      localStorage.removeItem(`prayed_${requestId}`);
+      setError('Could not save prayer count. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const cat = categoryConfig[request.category] || categoryConfig.other;
@@ -71,25 +71,33 @@ export default function PrayerRequestCard({ request }) {
             </span>
           )}
         </div>
+
         <h3 className="font-heading text-lg font-semibold text-stone-800 mb-2 group-hover:text-[#1A1830] transition-colors leading-snug">
           {request.title}
         </h3>
+
         <p className="text-sm text-stone-500 line-clamp-2 mb-3 leading-relaxed">{request.description}</p>
+
         {request.requester_name && (
           <p className="text-xs text-stone-400 mb-3">
             Shared by <span className="font-medium text-stone-500">{request.requester_name}</span>
           </p>
         )}
+
         <div className="flex items-center justify-between pt-3 border-t border-stone-50">
           <span className="flex items-center gap-1.5 text-xs text-stone-400">
             <Heart className="w-3.5 h-3.5" /> {count} {count === 1 ? 'prayer' : 'prayers'}
           </span>
+
           <button
             onClick={handlePray}
-            disabled={prayed || loading}
+            disabled={prayed || loading || !isPersistable}
+            title={!isPersistable ? 'This item is sample data and cannot be updated.' : ''}
             className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
               prayed
                 ? 'bg-green-50 text-green-600 cursor-default'
+                : !isPersistable
+                ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
                 : 'bg-[#1A1830] text-white hover:bg-[#2A2840]'
             }`}
           >
@@ -100,6 +108,8 @@ export default function PrayerRequestCard({ request }) {
             )}
           </button>
         </div>
+
+        {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
       </div>
     </Link>
   );
