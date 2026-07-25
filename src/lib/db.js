@@ -106,32 +106,14 @@ export async function addPrayerRequest(data) {
 
 export async function getPrayerRequests(max = 50) {
   try {
-    const q = query(
-      collection(db, PRAYER_REQUESTS),
-      orderBy('created_date', 'desc'),
-      limit(max)
-    );
+    const q = query(collection(db, PRAYER_REQUESTS), orderBy('created_date', 'desc'), limit(max));
     const snapshot = await getDocs(q);
-    const docs = snapshot.docs.map(docToObject);
-    if (docs.length) return docs;
+    // If we get here and snapshot is empty, do NOT return mock data automatically.
+    return snapshot.docs.map(docToObject);
   } catch (err) {
-    console.warn('Primary query failed:', err);
+    console.error('Firebase Query Error:', err);
+    throw err; // Let the UI handle the error rather than returning mock data
   }
-
-  try {
-    const q2 = query(
-      collection(db, PRAYER_REQUESTS),
-      orderBy('created_date_client', 'desc'),
-      limit(max)
-    );
-    const snapshot2 = await getDocs(q2);
-    const docs2 = snapshot2.docs.map(docToObject);
-    if (docs2.length) return docs2;
-  } catch (err) {
-    console.warn('Secondary query failed:', err);
-  }
-
-  return PRESET_PRAYER_REQUESTS.slice(0, max);
 }
 
 export async function getPrayerRequestById(id) {
