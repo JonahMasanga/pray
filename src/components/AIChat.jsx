@@ -1,13 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-//import { base44 } from '@/api/base44Client';
-import { Send, Loader2, Bot, Heart, BookOpen, Sparkles, HandHeart } from 'lucide-react';
+import { Send, Loader2, Bot, Heart, BookOpen, Sparkles, HandHeart, User, Quote } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 const suggestions = [
-  { icon: Heart, text: 'I am worried about my job', color: 'text-blue-500' },
-  { icon: Sparkles, text: 'Help me pray for healing', color: 'text-pink-500' },
-  { icon: BookOpen, text: 'Find me a verse about hope', color: 'text-amber-500' },
-  { icon: HandHeart, text: 'I need guidance for my family', color: 'text-purple-500' },
+  { icon: Heart, text: 'I am worried about my job', color: 'text-blue-500', bg: 'bg-blue-50' },
+  { icon: Sparkles, text: 'Help me pray for healing', color: 'text-pink-500', bg: 'bg-pink-50' },
+  { icon: BookOpen, text: 'Find me a verse about hope', color: 'text-amber-500', bg: 'bg-amber-50' },
+  { icon: HandHeart, text: 'I need guidance for my family', color: 'text-purple-500', bg: 'bg-purple-50' },
 ];
 
 export default function AIChat() {
@@ -15,7 +14,7 @@ export default function AIChat() {
     {
       role: 'assistant',
       content:
-        "Hello, I'm your prayer assistant. I'm here to help you write prayers, find Bible verses, and receive encouragement. How can I support you today? 💛",
+        "Hello friend. I've been waiting for you. I'm here to listen, to pray with you, and to find light in God's word together. What's been weighing on your heart today? 🕊️",
     },
   ]);
   const [input, setInput] = useState('');
@@ -23,125 +22,136 @@ export default function AIChat() {
   const scrollRef = useRef(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages, loading]);
 
   const handleSend = async (text) => {
     const userMessage = (text || input).trim();
     if (!userMessage || loading) return;
 
-    setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
+    const newMessages = [...messages, { role: 'user', content: userMessage }];
+    setMessages(newMessages);
     setInput('');
     setLoading(true);
 
     try {
-      const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a compassionate AI prayer assistant in a prayer community app called PrayerHub. Your role is to help people by:
-1. Writing heartfelt, personalized prayers based on the user's situation
-2. Sharing relevant Bible verses with full references (book, chapter, verse)
-3. Offering spiritual encouragement and hope
-
-Be warm, empathetic, and uplifting. Write prayers that are poetic but accessible. Always include at least one relevant Bible verse.
-
-User's message: "${userMessage}"
-
-Respond with: encouraging words, 1-3 relevant Bible verses (with full text and reference), and a personalized prayer.`,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            encouragement: { type: 'string', description: 'Warm, empathetic words of encouragement and understanding' },
-            verses: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  reference: { type: 'string', description: 'Full Bible reference, e.g. Philippians 4:6' },
-                  text: { type: 'string', description: 'The verse text' },
-                },
-              },
-              description: '1-3 relevant Bible verses',
-            },
-            prayer: { type: 'string', description: 'A heartfelt, personalized prayer related to the user situation' },
-          },
-          required: ['encouragement', 'verses', 'prayer'],
+      // NOTE: Replace the URL and Key with your actual AI provider (OpenAI, Gemini, etc.)
+      // This implementation uses a standard POST request structure.
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
         },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a warm, deeply compassionate, and human-like prayer assistant named 'Grace'. 
+              
+              YOUR PERSONALITY:
+              - You are NOT a robot. You are a supportive friend in faith.
+              - Use warm, gentle language. 
+              - Validate the user's feelings first ("I can hear how heavy that feels," or "It's okay to be tired.")
+              - Avoid repetitive "As an AI..." phrases.
+              - Use emojis sparingly but warmly (🕊️, 🙏, ✨, 💛).
+
+              YOUR RESPONSE STRUCTURE:
+              1. A brief, empathetic conversational response acknowledging their specific situation.
+              2. 1-2 powerful Bible verses that fit their exact need. Format them beautifully.
+              3. A short, poetic, and original prayer written specifically for them.
+              
+              Use Markdown for bolding and italics to make the text easy to read.`
+            },
+            ...newMessages.map(m => ({ role: m.role, content: m.content }))
+          ],
+          temperature: 0.7,
+        }),
       });
 
-      let content = '';
-      if (response.encouragement) {
-        content += response.encouragement + '\n\n';
-      }
-      if (response.verses && response.verses.length > 0) {
-        content += '**Scripture for You**\n\n';
-        response.verses.forEach((v) => {
-          content += `*"${v.text}"* — **${v.reference}**\n\n`;
-        });
-      }
-      if (response.prayer) {
-        content += '**A Prayer for You**\n\n' + response.prayer;
-      }
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error?.message || 'API Error');
 
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: content || "I'm here for you. Tell me more about what's on your heart." },
-      ]);
+      const aiContent = data.choices[0].message.content;
+
+      setMessages((prev) => [...prev, { role: 'assistant', content: aiContent }]);
     } catch (err) {
-      console.error('AI prayer assistant error:', err);
+      console.error('AI Error:', err);
+      // Fallback response for "human" error handling
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
           content:
-            "I apologize, I'm having trouble responding right now. Please try again in a moment. 🙏",
+            "I'm so sorry, I seemed to have stumbled over my words for a moment. My connection is a bit weak, but my heart is still here for you. Could you try saying that one more time? 🙏",
         },
       ]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="max-w-2xl mx-auto space-y-4">
+    <div className="flex flex-col h-full bg-[#FAF8F3]">
+      {/* Chat Area */}
+      <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="max-w-2xl mx-auto space-y-6">
           {messages.map((msg, i) => (
             <div
               key={i}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
             >
+              {/* Avatar Icons */}
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${
+                msg.role === 'user' ? 'bg-[#C9A961]' : 'bg-[#1A1830]'
+              }`}>
+                {msg.role === 'user' ? <User className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-white" />}
+              </div>
+
+              {/* Message Bubble */}
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                className={`max-w-[85%] rounded-2xl px-5 py-3.5 shadow-sm ${
                   msg.role === 'user'
-                    ? 'bg-[#1A1830] text-white'
-                    : 'bg-white border border-stone-100 text-stone-700'
+                    ? 'bg-[#1A1830] text-white rounded-tr-none'
+                    : 'bg-white border border-stone-100 text-stone-700 rounded-tl-none'
                 }`}
               >
-                {msg.role === 'user' ? (
-                  <p className="text-sm leading-relaxed">{msg.content}</p>
-                ) : (
-                  <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-headings:my-2 prose-strong:text-[#1A1830] prose-em:text-[#C9A961] prose-li:my-0.5">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </div>
-                )}
+                <div className="prose prose-sm max-w-none 
+                  prose-p:leading-relaxed prose-p:my-2 
+                  prose-strong:text-[#1A1830] prose-strong:font-semibold
+                  prose-em:text-[#C9A961] prose-em:italic
+                  msg-content">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
               </div>
             </div>
           ))}
 
-          {/* Suggestions */}
-          {messages.length === 1 && (
-            <div className="pt-4">
-              <p className="text-xs text-stone-400 text-center mb-3">Try asking:</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {/* Initial Suggestions */}
+          {messages.length === 1 && !loading && (
+            <div className="pt-2 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="flex items-center gap-2 mb-4 justify-center">
+                <div className="h-[1px] bg-stone-200 w-12"></div>
+                <p className="text-xs font-medium text-stone-400 uppercase tracking-widest">How can I help?</p>
+                <div className="h-[1px] bg-stone-200 w-12"></div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {suggestions.map((s, i) => {
                   const Icon = s.icon;
                   return (
                     <button
                       key={i}
                       onClick={() => handleSend(s.text)}
-                      className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-white border border-stone-100 hover:border-[#C9A961] hover:shadow-sm transition-all text-left"
+                      className="group flex items-center gap-3 px-4 py-4 rounded-2xl bg-white border border-stone-100 hover:border-[#C9A961] hover:shadow-md transition-all text-left"
                     >
-                      <Icon className={`w-4 h-4 ${s.color} flex-shrink-0`} />
-                      <span className="text-sm text-stone-600">{s.text}</span>
+                      <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                        <Icon className={`w-5 h-5 ${s.color}`} />
+                      </div>
+                      <span className="text-sm font-medium text-stone-600 group-hover:text-stone-900">{s.text}</span>
                     </button>
                   );
                 })}
@@ -149,45 +159,57 @@ Respond with: encouraging words, 1-3 relevant Bible verses (with full text and r
             </div>
           )}
 
-          {/* Loading */}
+          {/* Loading Animation */}
           {loading && (
-            <div className="flex justify-start">
-              <div className="bg-white border border-stone-100 rounded-2xl px-4 py-3">
-                <div className="flex items-center gap-2 text-stone-400">
-                  <Bot className="w-4 h-4" />
-                  <span className="text-sm">Praying and reflecting...</span>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <div className="flex justify-start items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#1A1830] flex items-center justify-center">
+                <Bot className="w-4 h-4 text-white" />
+              </div>
+              <div className="bg-white border border-stone-100 rounded-2xl px-5 py-3 shadow-sm">
+                <div className="flex items-center gap-3 text-stone-400">
+                  <div className="flex gap-1">
+                    <span className="w-1.5 h-1.5 bg-stone-300 rounded-full animate-bounce"></span>
+                    <span className="w-1.5 h-1.5 bg-stone-300 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                    <span className="w-1.5 h-1.5 bg-stone-300 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                  </div>
+                  <span className="text-xs font-medium tracking-wide italic">Grace is reflecting...</span>
                 </div>
               </div>
             </div>
           )}
 
-          <div ref={scrollRef} />
+          <div ref={scrollRef} className="h-4" />
         </div>
       </div>
 
-      {/* Input */}
-      <div className="flex-shrink-0 border-t border-stone-100 bg-white px-4 py-3">
-        <div className="max-w-2xl mx-auto flex gap-2">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Share what's on your heart..."
-            className="flex-1 rounded-xl border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A961] focus:border-transparent transition-all"
-          />
-          <button
-            onClick={() => handleSend()}
-            disabled={loading || !input.trim()}
-            className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#1A1830] text-white hover:bg-[#2A2840] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-          >
-            <Send className="w-4 h-4" />
-          </button>
+      {/* Sticky Input Field */}
+      <div className="border-t border-stone-200 bg-white/80 backdrop-blur-md px-4 py-4 sm:px-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="relative flex items-end gap-2">
+            <textarea
+              rows="1"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="What's on your heart?"
+              className="w-full rounded-2xl border border-stone-200 bg-stone-50 pl-4 pr-12 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A961] focus:border-transparent transition-all resize-none max-h-32"
+            />
+            <button
+              onClick={() => handleSend()}
+              disabled={loading || !input.trim()}
+              className="absolute right-1.5 bottom-1.5 inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#1A1830] text-white hover:bg-[#C9A961] hover:shadow-lg transition-all disabled:opacity-30 disabled:grayscale flex-shrink-0"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 translate-x-0.5 -translate-y-0.5" />}
+            </button>
+          </div>
+          <p className="text-[10px] text-stone-400 text-center mt-3 uppercase tracking-widest font-medium">
+            Grace is an AI prayer partner. Your conversations are private.
+          </p>
         </div>
       </div>
     </div>
