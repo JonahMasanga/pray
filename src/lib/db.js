@@ -244,14 +244,15 @@ const COMMENTS = 'comments';
  * @param {string} prayerRequestId
  * @returns {Promise<Array>}
  */
-export async function getComments(prayerRequestId) {
-  const q = query(
-    collection(db, COMMENTS),
-    where('prayer_request_id', '==', prayerRequestId),
-    orderBy('created_date', 'desc')
-  );
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(docToObject);
+export async function addComment(data) {
+  // Check that 'data' actually contains the 'prayer_request_id'
+  console.log("Adding comment with data:", data); 
+
+  const docRef = await addDoc(collection(db, COMMENTS), {
+    ...data, // This should include prayer_request_id
+    created_date: serverTimestamp(),
+  });
+  return docRef.id;
 }
 
 /**
