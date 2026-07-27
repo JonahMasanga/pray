@@ -54,6 +54,7 @@ Edit `.env`:
 | `VITE_FIREBASE_STORAGE_BUCKET` | `<project-id>.appspot.com` |
 | `VITE_FIREBASE_MESSAGING_SENDER_ID` | Messaging sender ID |
 | `VITE_FIREBASE_APP_ID` | Firebase App ID |
+| `VITE_OPENAI_API_KEY` | OpenAI API key (required for AI Prayer Assistant). Create one at [platform.openai.com](https://platform.openai.com/api-keys) — starts with `sk-`. **Keep this secret; never commit it.** |
 
 ### 6. Set up Firestore indexes
 
