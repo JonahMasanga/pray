@@ -15,7 +15,7 @@ export default function AIChat() {
     {
       role: 'assistant',
       content:
-        "Hello, I'm your AI prayer assistant. I'm here to help you write prayers, find Bible verses, and receive encouragement. How can I support you today? 💛",
+        "Hello, I'm your prayer assistant. I'm here to help you write prayers, find Bible verses, and receive encouragement. How can I support you today? 💛",
     },
   ]);
   const [input, setInput] = useState('');
