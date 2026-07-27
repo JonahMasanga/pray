@@ -270,7 +270,7 @@ export async function addComment(data) {
     created_date: serverTimestamp(),
   });
   return docRef.id;
-}
+} 
 
 /**
  * Create a new comment document.
