@@ -20,13 +20,6 @@ import {
   where, // <-- add this
 } from 'firebase/firestore';
 // Example shape — adapt to your existing DB client (supabase/sqlite/fetch/etc.)
-export async function getCommunityReplies(postId) {
-  // return array of replies for this post, newest/oldest as you prefer
-}
-
-export async function addCommunityReply({ post_id, author_name, content }) {
-  // insert reply row
-}
 
 const PRAYER_REQUESTS = 'prayer_requests';
 
