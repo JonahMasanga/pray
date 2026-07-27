@@ -183,10 +183,10 @@ export async function addTestimony(data) {
 // ─── Community Posts ──────────────────────────────────────────────────────────
 
 const COMMUNITY_POSTS = 'communityPosts';
+const REPLIES = 'community_replies'; // Use a constant for consistency
 
 /**
  * Fetch all community posts ordered by creation date (newest first).
- * @returns {Promise<Array>}
  */
 export async function getCommunityPosts() {
   const q = query(
@@ -199,8 +199,6 @@ export async function getCommunityPosts() {
 
 /**
  * Create a new community post document.
- * @param {Object} data  Fields: author_name, content, post_type
- * @returns {Promise<string>} The new document ID
  */
 export async function addCommunityPost(data) {
   const docRef = await addDoc(collection(db, COMMUNITY_POSTS), {
@@ -211,46 +209,38 @@ export async function addCommunityPost(data) {
   });
   return docRef.id;
 }
-const COMMUNITY_POSTS = 'communityPosts';
 
 /**
- * Fetch all community posts ordered by creation date (newest first).
- * @returns {Promise<Array>}
+ * Add a reply to a specific community post.
  */
-export async function getCommunityPosts() {
-  const q = query(
-    collection(db, COMMUNITY_POSTS),
-    orderBy('created_date', 'desc')
-  );
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(docToObject);
-}
-
-/**
- * Create a new community post document.
- * @param {Object} data  Fields: author_name, content, post_type
- * @returns {Promise<string>} The new document ID
- */
-// src/lib/db.js
-
 export async function addCommunityReply({ post_id, author_name, content }) {
   if (!post_id || !author_name || !content) {
     throw new Error("Missing required fields for reply");
   }
 
   try {
-    const repliesRef = collection(db, 'community_replies'); // Ensure this matches your Firestore collection name
+    const repliesRef = collection(db, REPLIES);
     const docRef = await addDoc(repliesRef, {
       post_id: post_id,
       author_name: author_name,
       content: content,
-      created_date: serverTimestamp(), // Firestore handles this
+      created_date: serverTimestamp(),
     });
     return docRef.id;
   } catch (err) {
     console.error("Error adding reply to Firestore:", err);
-    throw err; // This will show up in your CommunityPostCard.jsx error state
+    throw err;
   }
+}
+
+export async function getCommunityReplies(postId) {
+  const q = query(
+    collection(db, 'community_replies'), // MUST match the name in addCommunityReply
+    where('post_id', '==', postId),
+    orderBy('created_date', 'desc')
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(docToObject);
 }
 // ─── Comments ────────────────────────────────────────────────────────────────
 
