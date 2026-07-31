@@ -36,49 +36,47 @@ export default function AIChat() {
     setInput('');
     setLoading(true);
 
-    try {
-      // NOTE: Replace the URL and Key with your actual AI provider (OpenAI, Gemini, etc.)
-      // This implementation uses a standard POST request structure.
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+   try {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      messages: [
+        {
+          role: 'system',
+          content: `You are a warm, deeply compassionate, and human-like prayer assistant named 'Grace'. 
+          
+          YOUR PERSONALITY:
+          - You are NOT a robot. You are a supportive friend in faith.
+          - Use warm, gentle language. 
+          - Validate the user's feelings first ("I can hear how heavy that feels," or "It's okay to be tired.")
+          - Avoid repetitive "As an AI..." phrases.
+          - Use emojis sparingly but warmly (🕊️, 🙏, ✨, 💛).
+
+          YOUR RESPONSE STRUCTURE:
+          1. A brief, empathetic conversational response acknowledging their specific situation.
+          2. 1-2 powerful Bible verses that fit their exact need. Format them beautifully.
+          3. A short, poetic, and original prayer written specifically for them.
+          
+          Use Markdown for bolding and italics to make the text easy to read.`,
         },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: `You are a warm, deeply compassionate, and human-like prayer assistant named 'Grace'. 
-              
-              YOUR PERSONALITY:
-              - You are NOT a robot. You are a supportive friend in faith.
-              - Use warm, gentle language. 
-              - Validate the user's feelings first ("I can hear how heavy that feels," or "It's okay to be tired.")
-              - Avoid repetitive "As an AI..." phrases.
-              - Use emojis sparingly but warmly (🕊️, 🙏, ✨, 💛).
+        ...newMessages.map((m) => ({ role: m.role, content: m.content })),
+      ],
+    }),
+  });
 
-              YOUR RESPONSE STRUCTURE:
-              1. A brief, empathetic conversational response acknowledging their specific situation.
-              2. 1-2 powerful Bible verses that fit their exact need. Format them beautifully.
-              3. A short, poetic, and original prayer written specifically for them.
-              
-              Use Markdown for bolding and italics to make the text easy to read.`
-            },
-            ...newMessages.map(m => ({ role: m.role, content: m.content }))
-          ],
-          temperature: 0.7,
-        }),
-      });
+  const data = await response.json();
 
-      const data = await response.json();
-      
-      if (!response.ok) throw new Error(data.error?.message || 'API Error');
+  if (!response.ok) throw new Error(data.error || 'API Error');
 
-      const aiContent = data.choices[0].message.content;
-
-      setMessages((prev) => [...prev, { role: 'assistant', content: aiContent }]);
+  const aiContent = data.reply;
+  setMessages((prev) => [...prev, { role: 'assistant', content: aiContent }]);
+} catch (err) {
+  ...
+}
+    setMessages((prev) => [...prev, { role: 'assistant', content: aiContent }]);
     } catch (err) {
       console.error('AI Error:', err);
       // Fallback response for "human" error handling
