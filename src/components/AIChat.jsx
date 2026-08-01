@@ -81,19 +81,7 @@ export default function AIChat() {
     }
   ]);
 }
-    setMessages((prev) => [...prev, { role: 'assistant', content: aiContent }]);
-    } catch (err) {
-      console.error('AI Error:', err);
-      // Fallback response for "human" error handling
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content:
-            "I'm so sorry, I seemed to have stumbled over my words for a moment. My connection is a bit weak, but my heart is still here for you. Could you try saying that one more time? 🙏",
-        },
-      ]);
-    } finally {
+  finally {
       setLoading(false);
     }
   };
