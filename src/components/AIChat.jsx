@@ -72,18 +72,19 @@ export default function AIChat() {
   if (!response.ok) throw new Error(data.error || 'API Error');
 
 } catch (err) {
-  console.error("AI Error:", err);
-
+  console.error("AI Chat error:", err);
   setMessages((prev) => [
     ...prev,
     {
-      role: "assistant",
-      content: `Error: ${err.message}`,
-    },
+      role: 'assistant',
+      content: 'Sorry, I could not process your request right now.'
+    }
   ]);
-} finally {
-  setLoading(false);
-};
+}
+  finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full bg-[#FAF8F3]">
