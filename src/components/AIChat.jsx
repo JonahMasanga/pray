@@ -71,10 +71,15 @@ export default function AIChat() {
 
   if (!response.ok) throw new Error(data.error || 'API Error');
 
-  const aiContent = data.reply;
-  setMessages((prev) => [...prev, { role: 'assistant', content: aiContent }]);
 } catch (err) {
-  ...
+  console.error("AI Chat error:", err);
+  setMessages((prev) => [
+    ...prev,
+    {
+      role: 'assistant',
+      content: 'Sorry, I could not process your request right now.'
+    }
+  ]);
 }
     setMessages((prev) => [...prev, { role: 'assistant', content: aiContent }]);
     } catch (err) {
