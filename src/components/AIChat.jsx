@@ -17,74 +17,84 @@ export default function AIChat() {
         "Hello friend. I've been waiting for you. I'm here to listen, to pray with you, and to find light in God's word together. What's been weighing on your heart today? 🕊️",
     },
   ]);
+
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+
+  /** @type {React.RefObject<HTMLDivElement>} */
   const scrollRef = useRef(null);
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+      scrollRef.current.scrollIntoView({
+        behavior: 'smooth',
+      });
     }
   }, [messages, loading]);
 
-  const handleSend = async (text) => {
-    const userMessage = (text || input).trim();
-    if (!userMessage || loading) return;
+ /**
+ * @param {string} text
+ */
+/**
+ * @param {string} text
+ */
+const handleSend = async (text= '') => {
+  const userMessage = (text || input).trim();
 
-    const newMessages = [...messages, { role: 'user', content: userMessage }];
-    setMessages(newMessages);
-    setInput('');
-    setLoading(true);
+  if (!userMessage || loading) return;
 
-   try {
-  const response = await fetch('/api/chat', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      messages: [
-        {
-          role: 'system',
-          content: `You are a warm, deeply compassionate, and human-like prayer assistant named 'Grace'. 
-          
-          YOUR PERSONALITY:
-          - You are NOT a robot. You are a supportive friend in faith.
-          - Use warm, gentle language. 
-          - Validate the user's feelings first ("I can hear how heavy that feels," or "It's okay to be tired.")
-          - Avoid repetitive "As an AI..." phrases.
-          - Use emojis sparingly but warmly (🕊️, 🙏, ✨, 💛).
-
-          YOUR RESPONSE STRUCTURE:
-          1. A brief, empathetic conversational response acknowledging their specific situation.
-          2. 1-2 powerful Bible verses that fit their exact need. Format them beautifully.
-          3. A short, poetic, and original prayer written specifically for them.
-          
-          Use Markdown for bolding and italics to make the text easy to read.`,
-        },
-        ...newMessages.map((m) => ({ role: m.role, content: m.content })),
-      ],
-    }),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) throw new Error(data.error || 'API Error');
-
-} catch (err) {
-  console.error("AI Chat error:", err);
-  setMessages((prev) => [
-    ...prev,
+  const newMessages = [
+    ...messages,
     {
-      role: 'assistant',
-      content: 'Sorry, I could not process your request right now.'
+      role: 'user',
+      content: userMessage,
+    },
+  ];
+
+  setMessages(newMessages);
+  setInput('');
+  setLoading(true);
+
+  try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: newMessages,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'API Error');
     }
-  ]);
-}
-  finally {
-      setLoading(false);
-    }
-  };
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: 'assistant',
+        content: data.reply,
+      },
+    ]);
+
+  } catch (err) {
+    console.error('AI Chat error:', err);
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: 'assistant',
+        content: 'Sorry, I could not process your request right now.',
+      },
+    ]);
+
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="flex flex-col h-full bg-[#FAF8F3]">
@@ -178,7 +188,7 @@ export default function AIChat() {
         <div className="max-w-2xl mx-auto">
           <div className="relative flex items-end gap-2">
             <textarea
-              rows="1"
+              rows={1}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
