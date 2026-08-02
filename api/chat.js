@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -13,18 +12,24 @@ export default async function handler(req, res) {
   try {
     const { messages } = req.body;
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages,
-      temperature: 0.7,
+    const prompt = messages
+      .map((m) => `${m.role}: ${m.content}`)
+      .join("\n\n");
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
     });
 
+    const result = await model.generateContent(prompt);
+
+    const text = result.response.text();
+
     return res.status(200).json({
-      reply: completion.choices[0].message.content,
+      reply: text,
     });
 
   } catch (error) {
-    console.error("OpenAI error:", error);
+    console.error("Gemini error:", error);
 
     return res.status(500).json({
       error: error.message || "AI service failed",
